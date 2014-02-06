@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import java.applet.Applet;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -66,13 +68,19 @@ public class Spider extends Applet implements Runnable {
         // add("North",new Button("himan"));
         // add("Center",spiderTable);
         // setTitle("Clayburg Solitaire");
-        Button empty = new Button("empty");
-        add(empty);
-        Button cheat = new Button("cheat");
-        add(cheat);
         restart = new Button("Restart");
+        restart.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                startmeup();
+            }
+        });
         add(restart);
         undo = new Button("Undo");
+        undo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                pileMover.undoMove();
+            }
+        });
         add(undo);
 
         // add(spiderTable);
@@ -233,16 +241,6 @@ public class Spider extends Applet implements Runnable {
         return super.handleEvent(evt);
     }
 
-    public boolean action(Event evt,Object arg) {
-        if (arg.equals("Restart")) {
-            startmeup();
-        }
-        if (arg.equals("Undo")) {
-            pileMover.undoMove();
-        }
-        return true;
-    }
-
     public void update(Graphics g) {    // force repaint() to not erase first...
         paint(g);
     }
@@ -295,8 +293,8 @@ public class Spider extends Applet implements Runnable {
         offScrGr.drawString("" + score,XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5 + 5,50);
         g.drawImage(offScrImage,0,0,this);
 
-        // restart.reshape(XHANDOFFSET + Card.CARDWIDTH + HANDSEP*5 ,100,50,20);
-        undo.reshape(XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5,0,50,20);
+        restart.setBounds(XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5,YHANDOFFSET + 50,50,20);
+        undo.setBounds(XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5,YHANDOFFSET + 75,50,20);
         long endPaint = System.currentTimeMillis();
 
         if (debugTiming) {
@@ -363,9 +361,10 @@ public class Spider extends Applet implements Runnable {
             }
         }
         for (i = 0; i < 10; i++) {
-            if (pileListUp[i].moveableCard(x,y)) {    // try to move a pile of cards
+            if (pileListUp[i].moveableCard(x,y)) {    // user clicked on a pile; try to start dragging(moving) a pile of cards
                 pIMxOffset = x - (XOFFSET + i * CARDWIDTH + i * PILESEP);
                 motionPile = new PileMoving(pileListUp[i],pileListUp[i].mouseOnACard(x,y));
+                pileMover.movePile(motionPile);
 
          //        pileInMotion = pileListUp[i].popTopCard(pileListUp[i].mouseOnACard(x,y));
                 pileFrom = pileListUp[i];

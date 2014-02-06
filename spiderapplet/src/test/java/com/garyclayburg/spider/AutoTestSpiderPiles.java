@@ -4,8 +4,9 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.apache.log4j.Logger;
+import org.junit.Before;
 
-public class AutoTestSpiderPiles extends TestCase {
+public class AutoTestSpiderPiles {
     public final static int DUMMY_X = 2;
     public final static int DUMMY_Y = 3;
     private Card[] uCard;
@@ -21,10 +22,11 @@ public class AutoTestSpiderPiles extends TestCase {
     private PileMover pm = null;
     private static Logger log = Logger.getLogger(AutoTestSpiderPiles.class);
 
-    public AutoTestSpiderPiles(String name) {
-        super(name);
-    }
+//    public AutoTestSpiderPiles(String name) {
+//        super(name);
+//    }
 
+    @Before
     public void setUp() {
         log.debug("\n\nsetUp test!: " + this);
         sixClubs = new Card(Card.CLUBS, 6);
@@ -68,6 +70,7 @@ public class AutoTestSpiderPiles extends TestCase {
         log.debug("pile 3 is " + pile3);
     }
 
+    @org.junit.Test
     public void testMove2Cards() {
         moveCards(2, pile1, pile3);
         dumpPiles("  testMove2Cards(): after moving 2 cards");
@@ -93,12 +96,14 @@ public class AutoTestSpiderPiles extends TestCase {
         assert (pile3.peekCard(5).equals(aceClubs));
     }
 
+    @org.junit.Test
     public void testMove3Piles() {
         moveCards(2, pile1, pile3);
         moveCards(1, pile2, pile3);
         fullPile3();
     }
 
+    @org.junit.Test
     public void testMove3PilesUndo() {
         moveCards(2, pile1, pile3);
         moveCards(1, pile2, pile3);
@@ -110,6 +115,7 @@ public class AutoTestSpiderPiles extends TestCase {
         assertOrig();
     }
 
+    @org.junit.Test
     public void testMove3PilesSingleUndo() {
         pileInMotion = new PileMoving(pile1, 2, pile3);
         pileInMotion2 = new PileMoving(pile2, 1, pile3);
@@ -120,12 +126,14 @@ public class AutoTestSpiderPiles extends TestCase {
         assertOrig();
     }
 
+    @org.junit.Test
     public void testUndoPartialMove() {
         pileInMotion = new PileMoving(pile1, 2);
         pileInMotion.undo();
         assertOrig();
     }
 
+    @org.junit.Test
     public void testUndoMove2Cards() {
         moveCards(2, pile1, pile3);
         dumpPiles("  testUndoMove2Cards(): after moving 2 cards");
@@ -135,6 +143,7 @@ public class AutoTestSpiderPiles extends TestCase {
     }
 
 
+    @org.junit.Test
     public void testMoveCard() {
         dumpPiles("before testMoveCard()");
         moveCards(1, pile2, pile1);
@@ -164,6 +173,7 @@ public class AutoTestSpiderPiles extends TestCase {
         assert (pile3.length() == 3);
     }
 
+    @org.junit.Test
     public void testUndoMoveCard() {
         log.debug("testUndoMoveCard");
         assertOrig();
@@ -174,7 +184,7 @@ public class AutoTestSpiderPiles extends TestCase {
         assertOrig();
         log.debug("    end testUndoMoveCard");
     }
-
+/*
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new AutoTestSpiderPiles("testMoveCard"));
@@ -190,4 +200,5 @@ public class AutoTestSpiderPiles extends TestCase {
     public static void main(String args[]) {
         junit.textui.TestRunner.run(suite());
     }
+    */
 }
