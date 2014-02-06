@@ -66,6 +66,10 @@ public class Spider extends Applet implements Runnable {
         // add("North",new Button("himan"));
         // add("Center",spiderTable);
         // setTitle("Clayburg Solitaire");
+        Button empty = new Button("empty");
+        add(empty);
+        Button cheat = new Button("cheat");
+        add(cheat);
         restart = new Button("Restart");
         add(restart);
         undo = new Button("Undo");
@@ -272,8 +276,8 @@ public class Spider extends Applet implements Runnable {
         for (i = 0; i < 8; i++) {
             score += acesList[i].paintPile(offScrGr,this);
         }
-        if (pileInMotion != null && pileFrom != handDown && !moveHandUpDown) {
-            score += pileInMotion.paintPile(offScrGr,this);
+        if (motionPile != null && motionPile.getPileInMotion() != null && pileFrom != handDown && !moveHandUpDown) {
+            score += motionPile.getPileInMotion().paintPile(offScrGr,this);
         }
         if (winner) {
             offScrGr.setColor(Color.black);
@@ -403,38 +407,38 @@ public class Spider extends Applet implements Runnable {
             log.debug("right mouse button up");
             return true;    // This eliminates cheating via right mouse clicks
         }
-        if (pileInMotion != null) {
+        if (motionPile != null && motionPile.getPileInMotion() != null) {
             g = getGraphics();
             getGraphicsTime = System.currentTimeMillis();
             if (pileFrom != handDown && !moveHandUpDown) {
-                pileInMotion.paintPile(offScrGr,this,true);
+                motionPile.getPileInMotion().paintPile(offScrGr,this,true);
                 for (int i = 0; i < 10; i++) {    // paint changed piles
-                    if (pileListUp[i].mouseOnTopCard(pileInMotion.getTopLeft()) ||
-                        pileListDown[i].mouseOnTopCard(pileInMotion.getTopLeft())) {
+                    if (pileListUp[i].mouseOnTopCard(motionPile.getPileInMotion().getTopLeft()) ||
+                        pileListDown[i].mouseOnTopCard(motionPile.getPileInMotion().getTopLeft())) {
                         pileListDown[i].paintPile(offScrGr,this);
                         pileListUp[i].paintPile(offScrGr,this);
                     }
                 }
                 for (int i = 0; i < 8; i++) {     // paint changed aces
-                    if (acesList[i].mouseOnTopCard(pileInMotion.getTopLeft())) {
+                    if (acesList[i].mouseOnTopCard(motionPile.getPileInMotion().getTopLeft())) {
                         acesList[i].paintPile(offScrGr,this);
                     }
                 }
-                if (handDown.mouseOnTopCard(pileInMotion.getTopLeft())) {
+                if (handDown.mouseOnTopCard(motionPile.getPileInMotion().getTopLeft())) {
                     handDown.paintPile(offScrGr,this);
                 }
             }
             long endLoopTime = System.currentTimeMillis();
 
-            pileInMotion.setLocation((pileInMotion.getx() + x - last_point.x),
+            motionPile.getPileInMotion().setLocation((motionPile.getPileInMotion().getx() + x - last_point.x),
 
-                                     // pileInMotion.move((pileInMotion.getx() + x - last_point.x),
-                                     (pileInMotion.gety() + y - last_point.y));
+                                                     // pileInMotion.move((pileInMotion.getx() + x - last_point.x),
+                                                     (motionPile.getPileInMotion().gety() + y - last_point.y));
             last_point.setLocation(x,y);
 
             // last_point.move(x,y);
             if (pileFrom != handDown && !moveHandUpDown) {
-                pileInMotion.paintPile(offScrGr,this,false);
+                motionPile.getPileInMotion().paintPile(offScrGr,this,false);
                 g.drawImage(offScrImage,0,0,this);
 
                 // g.drawImage(offScrImage,pileInMotion.getx(),0,this);
@@ -521,9 +525,12 @@ public class Spider extends Applet implements Runnable {
 
                         // pileListUp[i].doPileToPile(pileInMotion.popTopCard(1)); // don't do any checking, Just Do It!!
                     }
+                    pileListUp[i].doPileToPile(motionPiles[i].getPileInMotion().popTopCard(1));
                     pileMover.movePile(motionPiles);
                 }
                 pileInMotion = null;
+                motionPile = null;
+                
                 pileFrom = null;
             }
         }
@@ -532,21 +539,22 @@ public class Spider extends Applet implements Runnable {
         else {
             for (i = 0; i < 10; i++) {
                 if (i != origPileMoved && pileListUp[i].mouseOnTopCard(new Point(x - pIMxOffset,y)) &&
-                    pileInMotion != null && pileFrom != handDown) {
+                    motionPile != null && pileFrom != handDown) {
 
-                    // move pileInMotion to a pile
+                    // move motionPile to a pile
                     if (Spider.debughole) {
                         log.debug("trying to dump pile on pile");
                     }
-                    if ((pileListUp[i].length() != 0 && pileListUp[i].pileToPile(pileInMotion)) ||
+                    if ((pileListUp[i].length() != 0 && pileListUp[i].pileToPile(motionPile.getPileInMotion())) ||
                         // pile moved to valid pile
                         (pileListUp[i].length() == 0 && pileListDown[i].length() == 0 &&
-                         pileListUp[i].pileToPile(pileInMotion))) {
+                         pileListUp[i].pileToPile(motionPile.getPileInMotion()))) {
                         if (Spider.debughole) {
                             log.debug("found a good pile to dump pile on! (" + i + ")");
                         }
                         pileInMotion = null;
                         pileFrom = null;
+                        motionPile = null;  //todo keep list of motionPIle for undo
                         pile p = pileListUp[i].checkCompleteSuit();
 
                         if (Spider.debughole) {
@@ -579,14 +587,9 @@ public class Spider extends Applet implements Runnable {
                 }
             }
         }
-        if (pileFrom != null && pileInMotion != null) {
-
-            // pileInMotion should never be null, just a precaution
-            // if (solitaire.debugking) log.debug("LOSER! putting bad pile back" );
-            // if (solitaire.debugking) log.debug("" + "pileInMotion is:" + pileInMotion );
-            pileFrom.doPileToPile(pileInMotion);
-            pileFrom = null;
-            pileInMotion = null;
+        if (motionPile != null && motionPile.getPileFrom() != null){  //pile was dropped in an invalid location
+            motionPile.getPileFrom().doPileToPile(motionPile.getPileInMotion());
+            motionPile = null;  //todo keep list of motionPile  for undo?
         }
         flipped = true;
         log.debug("down with mouseup");
