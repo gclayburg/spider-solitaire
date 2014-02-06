@@ -26,7 +26,7 @@ public class pile10up extends pile {
   // post: num cards are returned and popped off pile (or as many as we can pop off)
     Point pointOfTop;
     //    pileint owner = pi;  // Interface for calling pile subclass - should be pile7up or pile10up
-    //    if (spider.debug) System.out.println("pile10up: popTopCard(int)");
+    //    if (Spider.debug) System.out.println("pile10up: popTopCard(int)");
     if (maxCards == 0) { return null; }
     if (maxCards < num) {
       num = maxCards; //pop all that we have.
@@ -40,7 +40,7 @@ public class pile10up extends pile {
     pile p = new pile10up(num,c,pointOfTop);  // can't use plain old pile. Can't instantiate abstract class.
     // could use callbacks via interfaces or make pile non-abstract and instantiate pile here.
     // or I could subclass this method to both pile7up and pile10up
-    if (spider.debug) System.out.println("pile10up: popTopCard(int) returning pile" + p);
+    if (Spider.debug) System.out.println("pile10up: popTopCard(int) returning pile" + p);
     return p;
   }
 
@@ -54,13 +54,13 @@ public class pile10up extends pile {
     int prevVal2 = 0;
     int prev_y = this.y;
     int inc =0;
-    //    if (spider.debug) System.out.println("(x,y) at cardUnderMouse = (" + x + "," + y + ")  this = ( "+ this.x + "," +this.y);
+    //    if (Spider.debug) System.out.println("(x,y) at cardUnderMouse = (" + x + "," + y + ")  this = ( "+ this.x + "," +this.y);
     if (x >= this.x && x <= (this.x + Card.CARDWIDTH) && (y >= this.y)){
 //       if ((maxCards ==0) && (y <= this.y + Card.CARDHEIGHT))
 // 	ret =0;  // found an empty pile
       
       for (int i = 0; i <maxCards; i++){
-	//	if (spider.debug) System.out.println("Start for, i =" + i);
+	//	if (Spider.debug) System.out.println("Start for, i =" + i);
 
 	if ((prevSuit == cardPile[i].getSuit() ) && ( (prevVal -1) == cardPile[i].getValue()) &&
 	    (maxCards -1 != i) && (cardPile[i].getSuit() == cardPile[i+1].getSuit()) &&
@@ -73,7 +73,7 @@ public class pile10up extends pile {
 	if ( i == (maxCards -1))
 	  if (y <= (prev_y +Card.CARDHEIGHT)){
 	    ret = i + 1;
-	    //	    if (spider.debug) System.out.println("got card on the end: ret =" + ret);
+	    //	    if (Spider.debug) System.out.println("got card on the end: ret =" + ret);
 	  }
 	prev_y += inc;
 	prevVal2 = prevVal;
@@ -82,7 +82,7 @@ public class pile10up extends pile {
 	prevSuit = cardPile[i].getSuit();
 
 	if (y <= prev_y ){
-	  //	  if (spider.debug) System.out.println("found card: " + i);
+	  //	  if (Spider.debug) System.out.println("found card: " + i);
 	  ret = i +1;  // we found the card!
 	  break;
 	}
@@ -103,9 +103,9 @@ public class pile10up extends pile {
     int prevVal2 = 0;
     int prev_y = this.y;
     int inc =0;
-    //    if (spider.debughole) System.out.println("(x,y) at topCardPoint = (" + x + "," + y + ")  this = ( "+ this.x + "," +this.y);
+    //    if (Spider.debughole) System.out.println("(x,y) at topCardPoint = (" + x + "," + y + ")  this = ( "+ this.x + "," +this.y);
     for (int i = 0; i <maxCards; i++){
-      //      if (spider.debughole) System.out.println("topCardPoint: Start for, i =" + i);
+      //      if (Spider.debughole) System.out.println("topCardPoint: Start for, i =" + i);
 
       if ((prevSuit == cardPile[i].getSuit() ) && ( (prevVal -1) == cardPile[i].getValue()) &&
 	  (maxCards -1 != i) && (cardPile[i].getSuit() == cardPile[i+1].getSuit()) &&
@@ -117,7 +117,7 @@ public class pile10up extends pile {
 
       if ( i == (maxCards -1)){
 	ret = new Point(x,prev_y);
-	//	if (spider.debughole) System.out.println("got card on the end: ret =" + ret);
+	//	if (Spider.debughole) System.out.println("got card on the end: ret =" + ret);
       }
       prev_y += inc;
       prevVal2 = prevVal;
@@ -126,7 +126,7 @@ public class pile10up extends pile {
       prevSuit = cardPile[i].getSuit();
 
     }
-    //    if (spider.debughole) System.out.println(ret + " cardsUnderMouse.");
+    //    if (Spider.debughole) System.out.println(ret + " cardsUnderMouse.");
     return ret;
   }	     
 
@@ -176,16 +176,16 @@ public class pile10up extends pile {
 //   }
 
   public boolean moveableCard(int x, int y){
-    // returns: whether or not the card under the mouse pos on a spider pile can be moved.
+    // returns: whether or not the card under the mouse pos on a Spider pile can be moved.
     int i;
     int pos = cardsUnderMouse(x,y);
-    if (spider.debughole) System.out.println("pos     = " + pos);
-    if (spider.debughole) System.out.println("maxCards = " + maxCards);
+    if (Spider.debughole) System.out.println("pos     = " + pos);
+    if (Spider.debughole) System.out.println("maxCards = " + maxCards);
     if (pos == 0 ) return false;
     if (maxCards <= 1) return true;
     boolean ret = true; //innocent until proven guily!
     for (i = pos -1; i < (maxCards -1); i++){
-      if (spider.debughole) System.out.println("loop = " + i);
+      if (Spider.debughole) System.out.println("loop = " + i);
 
       if ((cardPile[i].getSuit() != cardPile[i+1].getSuit()) ||
 	  (cardPile[i].getValue() -1 != cardPile[i+1].getValue()) ){
@@ -200,7 +200,7 @@ public class pile10up extends pile {
     /*
       returns: true if (x,y) is on a card at end of pileup
       */ 
-    if (spider.debug) System.out.println("pile10up.mouseOnTopCard(" + x + "," + y +")");
+    if (Spider.debug) System.out.println("pile10up.mouseOnTopCard(" + x + "," + y +")");
     if ((maxCards ==0) && (x >= this.x && x <= (this.x + Card.CARDWIDTH)) &&
 	(y >= this.y) && (y >= this.y && y <= (this.y + Card.CARDWIDTH)))
       return true;
@@ -284,15 +284,15 @@ public class pile10up extends pile {
     //          false if not
 
     //    System.out.println("hi");
-    //    if (spider.debughole) System.out.println("Checking for empty pile: " + maxCards + " maxCards");
+    //    if (Spider.debughole) System.out.println("Checking for empty pile: " + maxCards + " maxCards");
     if (maxCards == 0){
 
-      //      if (spider.debughole) System.out.println("found a valid king!");
+      //      if (Spider.debughole) System.out.println("found a valid king!");
       doPileToPile(newPile);  // put anything on empty pile
       return true;
     }
     Card c = newPile.peekCard(0);
-    //    if (spider.debughole) System.out.println("" + "card on pileinmotion is " + c );
+    //    if (Spider.debughole) System.out.println("" + "card on pileinmotion is " + c );
     if ( (c.getValue() + 1) == cardPile[maxCards -1].getValue()) {
       doPileToPile(newPile);
       return true;

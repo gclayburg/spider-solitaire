@@ -17,7 +17,7 @@ public abstract class pile extends Component{
     this.x = x;
     this.y = y;
     topLeft = new Point(x,y);
-    offSetY = y - spider.YOFFSET;
+    offSetY = y - Spider.YOFFSET;
   }
 
   //  public abstract pile popTopCard(int num);
@@ -26,7 +26,7 @@ public abstract class pile extends Component{
   // post: num cards are returned and popped off pile (or as many as we can pop off)
     Point pointOfTop;
     //    pileint owner = pi;  // Interface for calling pile subclass - should be pile7up or pile10up
-    if (spider.debug) System.out.println("pile: popTopCard(int)");
+    if (Spider.debug) System.out.println("pile: popTopCard(int)");
     if (maxCards == 0) { return null; }
     if (maxCards < num) {
       num = maxCards; //pop all that we have.
@@ -49,9 +49,9 @@ public abstract class pile extends Component{
       pre: there exists at least one card in pile
       post: top card is taken off stack and returned.
       */
-    //    if (spider.debug) System.out.println("trying to pop  " + maxCards + " card= " + cardPile[maxCards -1]);
-    if (spider.debug) System.out.println("trying to pop  " + maxCards );
-    if (spider.debug) System.out.println("popTopCard(): popping card: " + cardPile[maxCards -1] );
+    //    if (Spider.debug) System.out.println("trying to pop  " + maxCards + " card= " + cardPile[maxCards -1]);
+    if (Spider.debug) System.out.println("trying to pop  " + maxCards );
+    if (Spider.debug) System.out.println("popTopCard(): popping card: " + cardPile[maxCards -1] );
     return cardPile[--maxCards];
   }
 
@@ -94,7 +94,7 @@ public abstract class pile extends Component{
        post: is region bounded by p1 and  a subset of this top card?
        */ 
     Rectangle pileInMotionRect = new Rectangle(p1.x,p1.y,Card.CARDWIDTH,Card.CARDHEIGHT);
-    Rectangle pileRect= new Rectangle(topLeft.x,topLeft.y,Card.CARDWIDTH,spider.pileHeight);
+    Rectangle pileRect= new Rectangle(topLeft.x,topLeft.y,Card.CARDWIDTH,Spider.pileHeight);
     return pileInMotionRect.intersects(pileRect);
   }
 

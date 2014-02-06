@@ -25,7 +25,8 @@
  */
 package com.garyclayburg.spider;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.applet.Applet;
 import java.awt.*;
@@ -60,7 +61,7 @@ public final class Card {
     private static URL cb;
     public Image tmpImage;
     public Graphics tmpGr;
-    private static Logger log = Logger.getLogger(Card.class);
+    private static Logger log = LoggerFactory.getLogger(Card.class);
 
     public Card(int s,int v) {
         //pre:  v is a valid card value
@@ -177,7 +178,7 @@ public final class Card {
         gifImg = loadImage("/CardImages/" + this + ".gif");
         String str = v + "" + s;
         tracker.addImage(gifImg,Integer.parseInt(str));
-        if (spider.debug) log.debug(
+        if (Spider.debug) log.debug(
                 "" + this + " card being loaded with code base " + ac.getCodeBase() + "  Image name is: " + gifImg);
     }
 
@@ -201,7 +202,7 @@ public final class Card {
     public boolean equals(Card c) {
         boolean out = false;
         out = this.getValue() == c.getValue() && this.getSuit() == c.getSuit();
-        if (spider.debug) log.debug("Card.equals(): " + out);
+        if (Spider.debug) log.debug("Card.equals(): " + out);
         return out;
     }
 
@@ -230,7 +231,7 @@ public final class Card {
                 str = "" + val + suit;
                 cardnum = Integer.parseInt(str);
                 ac.showStatus("Loading Card Images: " + (i * 100 / 52) + "% complete");
-                if (spider.debug) log.debug("loading card: " + i);
+                if (Spider.debug) log.debug("loading card: " + i);
                 try {
                     tracker.waitForID(cardnum);
                 } catch (InterruptedException e) {
@@ -276,7 +277,7 @@ public final class Card {
     public void drawCard(Graphics g,int x,int y,ImageObserver eyes,boolean front,boolean blank) {
         if (blank) {
             g.setColor(Color.green);
-            g.fillRect(x,y,spider.CARDWIDTH,spider.CARDHEIGHT);
+            g.fillRect(x,y,Spider.CARDWIDTH,Spider.CARDHEIGHT);
         } else {
             drawCard(g,x,y,eyes,front);
         }

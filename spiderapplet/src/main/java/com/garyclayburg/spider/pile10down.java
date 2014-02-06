@@ -60,7 +60,7 @@ public class pile10down extends pile {
       when cards are flipped over.
       */
     for(int i=1;i <=maxCards;i++){
-      cardPile[0].drawCard(g,x,(y+spider.DOWNSEP*(i-1)),eyes,false);
+      cardPile[0].drawCard(g,x,(y+ Spider.DOWNSEP*(i-1)),eyes,false);
     }
     return maxCards; // used to make sure we paint() uppile in right spot
   }

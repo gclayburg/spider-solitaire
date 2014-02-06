@@ -4,7 +4,7 @@
 //Copyright:   Copyright (c) 1999
 //Author:      Gary Clayburg
 //Company:     hi
-//Description: Just testing GUI elements to eventually incorporate into spider applet
+//Description: Just testing GUI elements to eventually incorporate into Spider applet
 package com.garyclayburg.spider;
 
 import javax.swing.*;
