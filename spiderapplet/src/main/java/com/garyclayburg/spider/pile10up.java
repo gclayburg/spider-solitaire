@@ -326,11 +326,11 @@ public class pile10up extends pile {
         int prevVal = 0;
         int prevVal2 = 0;
         int prev_y;
-        if (isMoving) {
+//        if (isMoving) {
             prev_y = y - UPSEP;
-        } else {
-            prev_y = Spider.YOFFSET + (Spider.DOWNSEP * numCardsDown) - UPSEP;
-        }
+//        } else {
+//            prev_y = Spider.YOFFSET + (Spider.DOWNSEP * numCardsDown) - UPSEP;
+//        }
         int inc = 0;
         for (i = 0; i < maxCards; i++) {
 
@@ -380,6 +380,7 @@ public class pile10up extends pile {
 
     public void setNumCardsDown(int numCardsDown) {
         this.numCardsDown = numCardsDown;
+        y = Spider.YOFFSET + (Spider.DOWNSEP * numCardsDown);
     }
 
 }

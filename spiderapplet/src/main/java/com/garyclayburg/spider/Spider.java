@@ -71,10 +71,19 @@ public class Spider extends Applet implements Runnable {
         restart = new Button("Restart");
         restart.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                cheating=false;
                 startmeup();
             }
         });
         add(restart);
+        cheat = new Button("Cheat");
+        cheat.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                cheating=true;
+                startmeup();
+            }
+        });
+        add(cheat);
         undo = new Button("Undo");
         undo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -155,7 +164,11 @@ public class Spider extends Applet implements Runnable {
             log.debug("startmeup()");
         }
         solDeck = new CardDeck(ac,2);    // Spider uses two decks of cards
-        solDeck.shuffle();    // ok fine. so we shuffle the deck twice for the first game. I can live with that.
+        if (cheating){
+            solDeck.fill(ac,2);
+        }else{
+            solDeck.shuffle();  // ok fine. so we shuffle the deck twice for the first game. I can live with that.
+        }
         pileListUp = new pile10up[10];
         pileListDown = new pile10down[10];
         motionPiles = new PileMoving[10];
@@ -286,18 +299,19 @@ public class Spider extends Applet implements Runnable {
             offScrGr.setColor(Color.white);
             offScrGr.fillRect(200,200,100,100);
             offScrGr.setColor(Color.red);
-            offScrGr.setFont(new Font("TimesRoman",Font.PLAIN,24));
+            offScrGr.setFont(new Font("TimesRoman",Font.PLAIN,20));
             offScrGr.drawString("You",225,250);
             offScrGr.drawString("Win!",225,276);
         }
         offScrGr.setColor(Color.blue);
         offScrGr.setFont(ftr);
         offScrGr.drawString("Score: ",XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5 + 5,20);
-        offScrGr.drawString("" + score,XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5 + 5,50);
+        offScrGr.drawString("" + score,XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5 + 5,35);
         g.drawImage(offScrImage,0,0,this);
 
+        cheat  .setBounds(XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5,YHANDOFFSET + 30,50,20);
         restart.setBounds(XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5,YHANDOFFSET + 50,50,20);
-        undo.setBounds(XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5,YHANDOFFSET + 75,50,20);
+        undo   .setBounds(XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5,YHANDOFFSET + 75,50,20);
         long endPaint = System.currentTimeMillis();
 
         if (debugTiming) {
@@ -488,7 +502,7 @@ public class Spider extends Applet implements Runnable {
         if (motionPile != null && motionPile.getPileFrom() != null){  //pile was dropped in an invalid location
             motionPile.getPileFrom().doPileToPile(motionPile.getPileInMotion());
             motionPile.getPileInMotion().setIsMoving(false);
-            motionPile = null;  
+            motionPile = null;
 
         }
         flipped = true;
@@ -614,6 +628,7 @@ public class Spider extends Applet implements Runnable {
     private Font ftr = new Font("TimesRoman",Font.PLAIN,18);
     private int sleeptime;
     private Button restart;
+    private Button cheat;
     private Button undo;
     private static CardDeck solDeck;
     private static pile pileInMotion;
@@ -644,6 +659,7 @@ public class Spider extends Applet implements Runnable {
     private boolean loaded = false;     // are Images loaded yet?
     private boolean flipped = true;
     private int current_ace;
+    private boolean cheating = false;
 }
 
 /*--- formatting done in "Gary Java Convention" style on 11-28-2001 ---*/
