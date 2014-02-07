@@ -1,5 +1,5 @@
 package com.garyclayburg.spider;
-
+//todo: implement toString for better debugging
 public class PileMoving{
   private pile _pileInMotion = null;
   private pile _pileFrom = null;
@@ -26,7 +26,12 @@ public class PileMoving{
     _pileInMotion=null;
   }
 
-  public void setPileTo(pile pileTo){
+    @Override
+    public String toString() {
+        return "from: "+ _pileFrom != null ?_pileFrom.toString():"null" + "  inMotion: "+ _pileInMotion != null ? _pileInMotion.toString() : "null";
+    }
+
+    public void setPileTo(pile pileTo){
     _pileTo = pileTo;
   }
   public pile getPileTo(){

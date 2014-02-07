@@ -4,141 +4,143 @@ import java.awt.*;
 import java.awt.image.ImageObserver;
 
 public class pile10up extends pile {
-  public static final int UPSEP = 25;
-  public static final int UPSEP_SAMESUIT = 5;
+    public static final int UPSEP = 25;
+    public static final int UPSEP_SAMESUIT = 5;
+    private int numCardsDown;
 
-  public pile10up(int maxUp, Card[] cUp, int x, int y){
+    public pile10up(int maxUp,Card[] cUp,int x,int y) {
     /*
       PRE: (x,y) is top-left of down pile
       POST: a "good" pile7up is created
       cUp is the lone up card
       cDown is an array of down cards
       */
-    // create down pile
-    super(maxUp,cUp,x,y);  //this is dumb.
-  }
-  public pile10up(int maxUp, Card[] cUp, Point topLeft){
-    super(maxUp,cUp,topLeft.x,topLeft.y);
-  }
-
-  public pile popTopCard(int num){
-  // pre: there are at least num cards to pop off
-  // post: num cards are returned and popped off pile (or as many as we can pop off)
-    Point pointOfTop;
-    //    pileint owner = pi;  // Interface for calling pile subclass - should be pile7up or pile10up
-    //    if (Spider.debug) System.out.println("pile10up: popTopCard(int)");
-    if (maxCards == 0) { return null; }
-    if (maxCards < num) {
-      num = maxCards; //pop all that we have.
+        // create down pile
+        super(maxUp,cUp,x,y);  //this is dumb.
     }
-    Card c[] = new Card[num];
-    for (int i =num -1;i>=1;i--){
-      c[i] = popTopCard();
-    }
-    pointOfTop = topCardPoint();  //tricky part.  should use polymorphism here to drill down to correct extended pile.
-    c[0] = popTopCard();
-    pile p = new pile10up(num,c,pointOfTop);  // can't use plain old pile. Can't instantiate abstract class.
-    // could use callbacks via interfaces or make pile non-abstract and instantiate pile here.
-    // or I could subclass this method to both pile7up and pile10up
-    if (Spider.debug) System.out.println("pile10up: popTopCard(int) returning pile" + p);
-    return p;
-  }
 
-  private int cardsUnderMouse(int x, int y){
-    // returns: number of card at x,y counted from the top of the pile.  
-    //          Card closest to the top of the screen is #1.
-    int ret = 0;
-    int prevSuit = 0;
-    int prevSuit2 = 0;
-    int prevVal = 0;
-    int prevVal2 = 0;
-    int prev_y = this.y;
-    int inc =0;
-    //    if (Spider.debug) System.out.println("(x,y) at cardUnderMouse = (" + x + "," + y + ")  this = ( "+ this.x + "," +this.y);
-    if (x >= this.x && x <= (this.x + Card.CARDWIDTH) && (y >= this.y)){
+    public pile10up(int maxUp,Card[] cUp,Point topLeft) {
+        super(maxUp,cUp,topLeft.x,topLeft.y);
+    }
+
+    public pile popTopCard(int num) {
+        // pre: there are at least num cards to pop off
+        // post: num cards are returned and popped off pile (or as many as we can pop off)
+        Point pointOfTop;
+        //    pileint owner = pi;  // Interface for calling pile subclass - should be pile7up or pile10up
+        //    if (Spider.debug) System.out.println("pile10up: popTopCard(int)");
+        if (maxCards == 0) {
+            return null;
+        }
+        if (maxCards < num) {
+            num = maxCards; //pop all that we have.
+        }
+        Card c[] = new Card[num];
+        for (int i = num - 1; i >= 1; i--) {
+            c[i] = popTopCard();
+        }
+        pointOfTop =
+                topCardPoint();  //tricky part.  should use polymorphism here to drill down to correct extended pile.
+        c[0] = popTopCard();
+        pile p = new pile10up(num,c,pointOfTop);  // can't use plain old pile. Can't instantiate abstract class.
+        // could use callbacks via interfaces or make pile non-abstract and instantiate pile here.
+        // or I could subclass this method to both pile7up and pile10up
+        if (Spider.debug) System.out.println("pile10up: popTopCard(int) returning pile" + p);
+        return p;
+    }
+
+    private int cardsUnderMouse(int x,int y) {
+        // returns: number of card at x,y counted from the top of the pile.
+        //          Card closest to the top of the screen is #1.
+        int ret = 0;
+        int prevSuit = 0;
+        int prevSuit2 = 0;
+        int prevVal = 0;
+        int prevVal2 = 0;
+        int prev_y = this.y;
+        int inc = 0;
+        //    if (Spider.debug) System.out.println("(x,y) at cardUnderMouse = (" + x + "," + y + ")  this = ( "+ this.x + "," +this.y);
+        if (x >= this.x && x <= (this.x + Card.CARDWIDTH) && (y >= this.y)) {
 //       if ((maxCards ==0) && (y <= this.y + Card.CARDHEIGHT))
 // 	ret =0;  // found an empty pile
-      
-      for (int i = 0; i <maxCards; i++){
-	//	if (Spider.debug) System.out.println("Start for, i =" + i);
 
-	if ((prevSuit == cardPile[i].getSuit() ) && ( (prevVal -1) == cardPile[i].getValue()) &&
-	    (maxCards -1 != i) && (cardPile[i].getSuit() == cardPile[i+1].getSuit()) &&
-	    ((cardPile[i].getValue() -1) == cardPile[i+1].getValue() ))
+            for (int i = 0; i < maxCards; i++) {
+                //	if (Spider.debug) System.out.println("Start for, i =" + i);
 
-	  inc = UPSEP_SAMESUIT;
-	else
-	  inc = UPSEP;
+                if ((prevSuit == cardPile[i].getSuit()) && ((prevVal - 1) == cardPile[i].getValue()) &&
+                    (maxCards - 1 != i) && (cardPile[i].getSuit() == cardPile[i + 1].getSuit()) &&
+                    ((cardPile[i].getValue() - 1) == cardPile[i + 1].getValue()))
 
-	if ( i == (maxCards -1))
-	  if (y <= (prev_y +Card.CARDHEIGHT)){
-	    ret = i + 1;
-	    //	    if (Spider.debug) System.out.println("got card on the end: ret =" + ret);
-	  }
-	prev_y += inc;
-	prevVal2 = prevVal;
-	prevVal = cardPile[i].getValue();
-	prevSuit2 = prevSuit;
-	prevSuit = cardPile[i].getSuit();
+                    inc = UPSEP_SAMESUIT;
+                else inc = UPSEP;
 
-	if (y <= prev_y ){
-	  //	  if (Spider.debug) System.out.println("found card: " + i);
-	  ret = i +1;  // we found the card!
-	  break;
-	}
-      }
+                if (i == (maxCards - 1)) if (y <= (prev_y + Card.CARDHEIGHT)) {
+                    ret = i + 1;
+                    //	    if (Spider.debug) System.out.println("got card on the end: ret =" + ret);
+                }
+                prev_y += inc;
+                prevVal2 = prevVal;
+                prevVal = cardPile[i].getValue();
+                prevSuit2 = prevSuit;
+                prevSuit = cardPile[i].getSuit();
+
+                if (y <= prev_y) {
+                    //	  if (Spider.debug) System.out.println("found card: " + i);
+                    ret = i + 1;  // we found the card!
+                    break;
+                }
+            }
+        }
+        //    System.out.println(ret + " cardsUnderMouse.");
+
+        return ret;
     }
-    //    System.out.println(ret + " cardsUnderMouse.");
 
-    return ret;
-  }	     
+    public Point topCardPoint() {
+        // returns: number of card at x,y counted from the top of the pile.
+        //          Card closest to the top of the screen is #1.
+        Point ret = new Point(0,0);
+        int prevSuit = 0;
+        int prevSuit2 = 0;
+        int prevVal = 0;
+        int prevVal2 = 0;
+        int prev_y = this.y;
+        int inc = 0;
+        //    if (Spider.debughole) System.out.println("(x,y) at topCardPoint = (" + x + "," + y + ")  this = ( "+ this.x + "," +this.y);
+        for (int i = 0; i < maxCards; i++) {
+            //      if (Spider.debughole) System.out.println("topCardPoint: Start for, i =" + i);
 
-  public Point topCardPoint(){
-    // returns: number of card at x,y counted from the top of the pile.  
-    //          Card closest to the top of the screen is #1.
-    Point ret = new Point(0,0);
-    int prevSuit = 0;
-    int prevSuit2 = 0;
-    int prevVal = 0;
-    int prevVal2 = 0;
-    int prev_y = this.y;
-    int inc =0;
-    //    if (Spider.debughole) System.out.println("(x,y) at topCardPoint = (" + x + "," + y + ")  this = ( "+ this.x + "," +this.y);
-    for (int i = 0; i <maxCards; i++){
-      //      if (Spider.debughole) System.out.println("topCardPoint: Start for, i =" + i);
+            if ((prevSuit == cardPile[i].getSuit()) && ((prevVal - 1) == cardPile[i].getValue()) &&
+                (maxCards - 1 != i) && (cardPile[i].getSuit() == cardPile[i + 1].getSuit()) &&
+                ((cardPile[i].getValue() - 1) == cardPile[i + 1].getValue()))
 
-      if ((prevSuit == cardPile[i].getSuit() ) && ( (prevVal -1) == cardPile[i].getValue()) &&
-	  (maxCards -1 != i) && (cardPile[i].getSuit() == cardPile[i+1].getSuit()) &&
-	  ((cardPile[i].getValue() -1) == cardPile[i+1].getValue() ))
+                inc = UPSEP_SAMESUIT;
+            else inc = UPSEP;
 
-	inc = UPSEP_SAMESUIT;
-      else
-	inc = UPSEP;
+            if (i == (maxCards - 1)) {
+                ret = new Point(x,prev_y);
+                //	if (Spider.debughole) System.out.println("got card on the end: ret =" + ret);
+            }
+            prev_y += inc;
+            prevVal2 = prevVal;
+            prevVal = cardPile[i].getValue();
+            prevSuit2 = prevSuit;
+            prevSuit = cardPile[i].getSuit();
 
-      if ( i == (maxCards -1)){
-	ret = new Point(x,prev_y);
-	//	if (Spider.debughole) System.out.println("got card on the end: ret =" + ret);
-      }
-      prev_y += inc;
-      prevVal2 = prevVal;
-      prevVal = cardPile[i].getValue();
-      prevSuit2 = prevSuit;
-      prevSuit = cardPile[i].getSuit();
-
+        }
+        //    if (Spider.debughole) System.out.println(ret + " cardsUnderMouse.");
+        return ret;
     }
-    //    if (Spider.debughole) System.out.println(ret + " cardsUnderMouse.");
-    return ret;
-  }	     
 
 //   public Point topCardPoint(){
 //     Point p = new Point(x,(y + (maxCards -1) * UPSEP));
 //     return p;
 //   }
 
-  public int mouseOnACard(int x, int y){
-    // returns: number of cards of this pile10up that is above the mouse.
-    return (maxCards - cardsUnderMouse(x,y) + 1);
-  }
+    public int mouseOnACard(int x,int y) {
+        // returns: number of cards of this pile10up that is above the mouse.
+        return (maxCards - cardsUnderMouse(x,y) + 1);
+    }
 
 //     if (solitaire.debugking) System.out.println("" + "in mouseOnACard: (x,y) = " + x + "," + y );
 //     if (solitaire.debugking) System.out.println("thisxy = " + this.x + "," + this.y);
@@ -155,7 +157,7 @@ public class pile10up extends pile {
 //       }
 //       else{
 // 	if (solitaire.debugking) System.out.println("not this pile");
-      
+
 // 	return 0;
 //       }
 //     }
@@ -171,42 +173,41 @@ public class pile10up extends pile {
 // 	return 0;
 //       }
 //     }
-    
+
 //     return 0; 
 //   }
 
-  public boolean moveableCard(int x, int y){
-    // returns: whether or not the card under the mouse pos on a Spider pile can be moved.
-    int i;
-    int pos = cardsUnderMouse(x,y);
-    if (Spider.debughole) System.out.println("pos     = " + pos);
-    if (Spider.debughole) System.out.println("maxCards = " + maxCards);
-    if (pos == 0 ) return false;
-    if (maxCards <= 1) return true;
-    boolean ret = true; //innocent until proven guily!
-    for (i = pos -1; i < (maxCards -1); i++){
-      if (Spider.debughole) System.out.println("loop = " + i);
+    public boolean moveableCard(int x,int y) {
+        // returns: whether or not the card under the mouse pos on a Spider pile can be moved.
+        int i;
+        int pos = cardsUnderMouse(x,y);
+        if (Spider.debughole) System.out.println("pos     = " + pos);
+        if (Spider.debughole) System.out.println("maxCards = " + maxCards);
+        if (pos == 0) return false;
+        if (maxCards <= 1) return true;
+        boolean ret = true; //innocent until proven guily!
+        for (i = pos - 1; i < (maxCards - 1); i++) {
+            if (Spider.debughole) System.out.println("loop = " + i);
 
-      if ((cardPile[i].getSuit() != cardPile[i+1].getSuit()) ||
-	  (cardPile[i].getValue() -1 != cardPile[i+1].getValue()) ){
-	ret = false;
-	break;
-      }
+            if ((cardPile[i].getSuit() != cardPile[i + 1].getSuit()) ||
+                (cardPile[i].getValue() - 1 != cardPile[i + 1].getValue())) {
+                ret = false;
+                break;
+            }
+        }
+        return ret;
     }
-    return ret;
-  }
 
-  public boolean mouseOnTopCard(int x, int y){
+    public boolean mouseOnTopCard(int x,int y) {
     /*
       returns: true if (x,y) is on a card at end of pileup
-      */ 
-    if (Spider.debug) System.out.println("pile10up.mouseOnTopCard(" + x + "," + y +")");
-    if ((maxCards ==0) && (x >= this.x && x <= (this.x + Card.CARDWIDTH)) &&
-	(y >= this.y) && (y >= this.y && y <= (this.y + Card.CARDWIDTH)))
-      return true;
-    if (cardsUnderMouse(x,y) == 0) return false;
-    return (maxCards == cardsUnderMouse(x,y));
-  }
+      */
+        if (Spider.debug) System.out.println("pile10up.mouseOnTopCard(" + x + "," + y + ")");
+        if ((maxCards == 0) && (x >= this.x && x <= (this.x + Card.CARDWIDTH)) &&
+            (y >= this.y) && (y >= this.y && y <= (this.y + Card.CARDWIDTH))) return true;
+        if (cardsUnderMouse(x,y) == 0) return false;
+        return (maxCards == cardsUnderMouse(x,y));
+    }
 
 //     if (solitaire.debug) System.out.println("" + "in mouseOnTopCard: (x,y) = " + x + "," + y );
 //     if (solitaire.debug) System.out.println("thisxy = " + this.x + "," + this.y);
@@ -231,82 +232,85 @@ public class pile10up extends pile {
 //     return false; 
 //   }
 
-  public boolean clickEgg(int x, int y){
-    if (maxCards > 0)
-      if ( x >= this.x && x <= (this.x + Card.CARDWIDTH) &&
-	   y >= this.y && y <= (this.y ))
-	return true;
-    return false;
-  }
-  public void doCardToPile(Card c,int new_y){
-    cardPile[maxCards++] = c;
-    y -= new_y;
-    offSetY -= new_y;
-  }
-  public void doCardToPile(Card c) {
-    // actually adds the card without asking questions
-    // this should only be called (externally) when time to flip card over
+    public boolean clickEgg(int x,int y) {
+        if (maxCards > 0) if (x >= this.x && x <= (this.x + Card.CARDWIDTH) &&
+                              y >= this.y && y <= (this.y)) return true;
+        return false;
+    }
+
+    public void doCardToPile(Card c,int new_y) {
+        cardPile[maxCards++] = c;
+        y -= new_y;
+        offSetY -= new_y;
+    }
+
+    public void doCardToPile(Card c) {
+        // actually adds the card without asking questions
+        // this should only be called (externally) when time to flip card over
 //     if (solitaire.debug) System.out.println("" + " maxcards= " + maxCards);
 //     if (solitaire.debug) System.out.println("" + "card is " + c );
-    cardPile[maxCards++] = c;
+        cardPile[maxCards++] = c;
 //     if (solitaire.debug) System.out.println("" + "card is " + cardPile[maxCards -1] );
 //     if (solitaire.debug) System.out.println(""+  " maxcards= " + maxCards);
-  }
-  public boolean cardToPile(Card c){
-    // post: pile has a new card on it if it fits.
-    //  returns: true if card can be put on pile
-    //           false if not
-    if (maxCards == 0) { return false; }  // have empty pile here.
-    if (c == null ) {return false; } // happens if drag from empty area to card.
+    }
+
+    public boolean cardToPile(Card c) {
+        // post: pile has a new card on it if it fits.
+        //  returns: true if card can be put on pile
+        //           false if not
+        if (maxCards == 0) {
+            return false;
+        }  // have empty pile here.
+        if (c == null) {
+            return false;
+        } // happens if drag from empty area to card.
 //     if (solitaire.debug) System.out.println("" + "cardToPile: maxCards is " + maxCards);
 //     if (solitaire.debug) System.out.println("" + "this pile is this" + this );
 //     if (solitaire.debug) System.out.println("" + "this card is this" + c );
-    boolean alt_suit = ((c.isBlack() && cardPile[maxCards - 1].isRed()) ||
-			(c.isRed() && cardPile[maxCards - 1].isBlack()) );
-    if (alt_suit &&
-	((c.getValue() + 1) == cardPile[maxCards -1].getValue()) ){
-      doCardToPile(c);
-      return true;
+        boolean alt_suit =
+                ((c.isBlack() && cardPile[maxCards - 1].isRed()) || (c.isRed() && cardPile[maxCards - 1].isBlack()));
+        if (alt_suit && ((c.getValue() + 1) == cardPile[maxCards - 1].getValue())) {
+            doCardToPile(c);
+            return true;
+        } else {
+            return false;
+        }
     }
-    else{
-      return false;
+
+    public boolean addPile(pile newPile) {
+        return pileToPile(newPile);
     }
-  }
-  
-  public boolean addPile(pile newPile){
-    return pileToPile(newPile);
-  }
 
-  public boolean pileToPile(pile newPile){
-    // pre: newPile is a valid Spider pile
-    // post: newPile is "dropped" on top of this pile if it fits, otherwise nothing happens.
-    // returns: true if newPile can fit on this pile
-    //          false if not
+    public boolean pileToPile(pile newPile) {
+        // pre: newPile is a valid Spider pile
+        // post: newPile is "dropped" on top of this pile if it fits, otherwise nothing happens.
+        // returns: true if newPile can fit on this pile
+        //          false if not
 
-    //    System.out.println("hi");
-    //    if (Spider.debughole) System.out.println("Checking for empty pile: " + maxCards + " maxCards");
-    if (maxCards == 0){
+        //    System.out.println("hi");
+        //    if (Spider.debughole) System.out.println("Checking for empty pile: " + maxCards + " maxCards");
+        if (maxCards == 0) {
 
-      //      if (Spider.debughole) System.out.println("found a valid king!");
-      doPileToPile(newPile);  // put anything on empty pile
-      return true;
+            //      if (Spider.debughole) System.out.println("found a valid king!");
+            doPileToPile(newPile);  // put anything on empty pile
+            return true;
+        }
+        Card c = newPile.peekCard(0);
+        //    if (Spider.debughole) System.out.println("" + "card on pileinmotion is " + c );
+        if ((c.getValue() + 1) == cardPile[maxCards - 1].getValue()) {
+            doPileToPile(newPile);
+            return true;
+        } else {
+            return false;
+        }
     }
-    Card c = newPile.peekCard(0);
-    //    if (Spider.debughole) System.out.println("" + "card on pileinmotion is " + c );
-    if ( (c.getValue() + 1) == cardPile[maxCards -1].getValue()) {
-      doPileToPile(newPile);
-      return true;
-    }  
-    else{
-      return false;
+
+    @Override
+    public int paintPile(Graphics g,ImageObserver eyes) {
+        return paintPile(g,eyes,false);
     }
-  }
 
-  public int paintPile(Graphics g, ImageObserver eyes){
-    return paintPile(g,eyes,false);
-  }
-
-  public int paintPile(Graphics g, ImageObserver eyes,boolean blank){
+    public int paintPile(Graphics g,ImageObserver eyes,boolean blank) {
     /*
       pre:	pileNum is a valid pile (0-6)
       post:     pile is drawn
@@ -314,62 +318,69 @@ public class pile10up extends pile {
                                      3     ""        ""      ""     2+3
 				     4     ""        ""      ""     2+3+4
       */
-    int score =2;
-    int totscore =0;
-    int i =0;
-    int prevSuit = 0;
-    int prevSuit2 = 0;
-    int prevVal = 0;
-    int prevVal2 = 0;
-    int prev_y = y - UPSEP;
-    int inc =0;
-    for (i=0; i < maxCards; i++){
+        int score = 2;
+        int totscore = 0;
+        int i = 0;
+        int prevSuit = 0;
+        int prevSuit2 = 0;
+        int prevVal = 0;
+        int prevVal2 = 0;
+        int prev_y;
+        if (isMoving) {
+            prev_y = y - UPSEP;
+        } else {
+            prev_y = Spider.YOFFSET + (Spider.DOWNSEP * numCardsDown) - UPSEP;
+        }
+        int inc = 0;
+        for (i = 0; i < maxCards; i++) {
 
-      if ((prevSuit == cardPile[i].getSuit() ) && ( (prevVal -1) == cardPile[i].getValue())){ // 2 in a row
-	if ((prevSuit2 == cardPile[i].getSuit()) && ( (prevVal2 -1) == prevVal)) {  // 3 in a row
-	  
-	  inc = UPSEP_SAMESUIT;
-	  score++;
-	  totscore += score;
-	}else{
-	  totscore += score; 
-	}
-      }
-      else{
-	score = 2;
-	inc = UPSEP;
-      }
-      prev_y += inc;
-      prevVal2 = prevVal;
-      prevVal = cardPile[i].getValue();
-      prevSuit2 = prevSuit;
-      prevSuit = cardPile[i].getSuit();
-      
-      cardPile[i].drawCard(g,x,prev_y,eyes, true,blank);
-    }
-    return totscore;
-  }
+            if ((prevSuit == cardPile[i].getSuit()) && ((prevVal - 1) == cardPile[i].getValue())) { // 2 in a row
+                if ((prevSuit2 == cardPile[i].getSuit()) && ((prevVal2 - 1) == prevVal)) {  // 3 in a row
 
-  public pile checkCompleteSuit(){
-    int i =0;
-    int prevSuit =0;
-    int prevVal =0;
-    int sum =1;
-    pile ret = null;
-    for (i=0;i<maxCards;i++){
-      if ((prevSuit == cardPile[i].getSuit()) && ( (prevVal -1) == cardPile[i].getValue())){
-	sum++;
-	//	System.out.println("sum is " + sum);
-	if (sum == 13) { // we just found a complete suit
-	  ret = popTopCard(13);
-	}
-      }
-      else
-	sum =1;
-      prevSuit = cardPile[i].getSuit();
-      prevVal = cardPile[i].getValue();
+                    inc = UPSEP_SAMESUIT;
+                    score++;
+                    totscore += score;
+                } else {
+                    totscore += score;
+                }
+            } else {
+                score = 2;
+                inc = UPSEP;
+            }
+            prev_y += inc;
+            prevVal2 = prevVal;
+            prevVal = cardPile[i].getValue();
+            prevSuit2 = prevSuit;
+            prevSuit = cardPile[i].getSuit();
+
+            cardPile[i].drawCard(g,x,prev_y,eyes,true,blank);
+        }
+        return totscore;
     }
-    return ret;
-  }
-}  
+
+    public pile checkCompleteSuit() {
+        int i = 0;
+        int prevSuit = 0;
+        int prevVal = 0;
+        int sum = 1;
+        pile ret = null;
+        for (i = 0; i < maxCards; i++) {
+            if ((prevSuit == cardPile[i].getSuit()) && ((prevVal - 1) == cardPile[i].getValue())) {
+                sum++;
+                //	System.out.println("sum is " + sum);
+                if (sum == 13) { // we just found a complete suit
+                    ret = popTopCard(13);
+                }
+            } else sum = 1;
+            prevSuit = cardPile[i].getSuit();
+            prevVal = cardPile[i].getValue();
+        }
+        return ret;
+    }
+
+    public void setNumCardsDown(int numCardsDown) {
+        this.numCardsDown = numCardsDown;
+    }
+
+}
       

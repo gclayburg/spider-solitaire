@@ -79,6 +79,7 @@ public class Spider extends Applet implements Runnable {
         undo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 pileMover.undoMove();
+                repaint();
             }
         });
         add(undo);
@@ -176,6 +177,7 @@ public class Spider extends Applet implements Runnable {
             }
             pileListUp[i] =
                     new pile10up(1,uCard,(XOFFSET + CARDWIDTH * i + PILESEP * i),(YOFFSET + (DOWNSEP * downcards)));
+            pileListUp[i].setNumCardsDown(downcards);
             pileListDown[i] = new pile10down(downcards,aCard,(XOFFSET + CARDWIDTH * i + PILESEP * i),YOFFSET);
         }
         Card[] hCard = new Card[50];    // cards to put in hand
@@ -267,7 +269,8 @@ public class Spider extends Applet implements Runnable {
         offScrGr.setColor(Color.green);
         offScrGr.fillRect(0,0,d.width,d.height);
         for (i = 0; i < 10; i++) {
-            pileListDown[i].paintPile(offScrGr,this);
+            int numCardsDown = pileListDown[i].paintPile(offScrGr,this);
+            pileListUp[i].setNumCardsDown(numCardsDown);
             score += pileListUp[i].paintPile(offScrGr,this);
         }
         handDown.paintPile(offScrGr,this);
@@ -334,58 +337,45 @@ public class Spider extends Applet implements Runnable {
             return true;    // This eliminates cheating via right mouse clicks
         }
 
-        // log.debug("mouseDown: x is " + x + "  y is " + y);
         if (handDown.mouseOnTopCard(x,y)) {    // need to flip 10 cards of hand to piles.
-            if (Spider.debug) {
-                log.debug("" + "mousedown NOW on hand");
-            }
-            if (Spider.debug) {
-                printPile();
-            }
-            if (Spider.debug) {
-                log.debug("handDown NOW is: " + handDown);
-            }
-            for (int j = 0; j < 10; j++) {
-                if (Spider.debug) {
-                    log.debug("create motionPiles " + j);
-                }
-                motionPiles[j] = new PileMoving(handDown,1,pileListUp[j]);
-            }
-
-            // pileInMotion = handDown.popTopCard(10);
-            pileFrom = handDown;
-
-            // if (Spider.debug) log.debug("10 cards just popped off is: " + pileInMotion);
-            if (pileInMotion == null) {
-                this.showStatus("no more cards, dude");
-            }
-        }
-        for (i = 0; i < 10; i++) {
-            if (pileListUp[i].moveableCard(x,y)) {    // user clicked on a pile; try to start dragging(moving) a pile of cards
-                pIMxOffset = x - (XOFFSET + i * CARDWIDTH + i * PILESEP);
-                motionPile = new PileMoving(pileListUp[i],pileListUp[i].mouseOnACard(x,y));
-                pileMover.movePile(motionPile);
-
-         //        pileInMotion = pileListUp[i].popTopCard(pileListUp[i].mouseOnACard(x,y));
-                pileFrom = pileListUp[i];
-
-                // if (solitaire.debugking) log.debug("poping a pile...");
-            } else {          // flip up a new card for a pile7
-                if (pileListUp[i].length() == 0 && pileListDown[i].mouseOnTopCard(x,y)) {
-                    flipPile = i;
-                }
+            handleHandClick();
+        } else{
+            for (int pileNum = 0; pileNum < 10; pileNum++) {
+                handlePileClick(x,y,pileNum);
             }
         }
         last_point.x = -1;    // kludge to get mouseDrag to be ok.
         if (last_point.x == -1) {
             last_point.setLocation(x,y);
-
-            // last_point.move(x,y);
-            if (debug) {
-                log.debug("" + "setting last_point");
-            }
         }
         return true;
+    }
+
+    private void handleHandClick() {
+        motionPiles = new PileMoving[10];
+        for (int j = 0; j < 10; j++) {
+            if (Spider.debug) {
+                log.debug("create motionPiles " + j);
+            }
+            motionPiles[j] = new PileMoving(handDown,1,pileListUp[j]);
+        }
+
+        pileFrom = handDown;
+
+        this.showStatus("");
+    }
+
+    private void handlePileClick(int x,int y,int pileNum) {
+        if (pileListUp[pileNum].moveableCard(x,y)) {    // user clicked on a pile; try to start dragging(moving) a pile of cards
+            pIMxOffset = x - (XOFFSET + pileNum * CARDWIDTH + pileNum * PILESEP);
+            motionPile = new PileMoving(pileListUp[pileNum],pileListUp[pileNum].mouseOnACard(x,y));
+            motionPile.getPileInMotion().setIsMoving(true);
+            pileFrom = pileListUp[pileNum];
+        } else {          // flip up a new card for a pile10
+            if (pileListUp[pileNum].length() == 0 && pileListDown[pileNum].mouseOnTopCard(x,y)) {
+                flipPile = pileNum;
+            }
+        }
     }
 
     private void wait(int ms) {
@@ -463,7 +453,6 @@ public class Spider extends Applet implements Runnable {
 
     public boolean mouseUp(Event evt,int x,int y) {
         int i;
-        boolean all_filled = true;
         int origPileMoved = nPileMoved;
 
         log.debug("" + "mouseup! " + evt.id);
@@ -477,61 +466,9 @@ public class Spider extends Applet implements Runnable {
             printPile();
         }
         flipped = false;
-
-        // if (pileInMotion != null  && handDown.mouseOnTopCard(x,y) && (pileFrom == handDown)) { // flip up the pileInMotion cards.
-        // //      if (solitaire.debug) log.debug("" + "mouseup on handdown" );
-        // int totCards =0;
-        // for (i=0;i<10;i++){
-        // totCards += pileListUp[i].length();
-        // totCards += pileListDown[i].length();
-        // //	repaint();
-        // if ( pileListUp[i].length() == 0)
-        // all_filled = false;
-        // }
-        // if (all_filled || totCards < 10){  // very extreme case that table is empty
-        // for (i=0;i<10;i++){  // spit out 10 cards to 10 piles
-        // if (Spider.debug) log.debug("i is " + i);
-        // if (Spider.debug) log.debug("pile of 10 cards is: " + pileInMotion);
-        // //  	  pileListUp[i].doPileToPile(pileInMotion.popTopCard(1)); // don't do any checking, Just Do It!!
-        // pileMover.movePile(motionPiles);
-        // }
-        // pileInMotion = null;
-        // pileFrom = null;
-        // }
-        // }
         if (motionPiles != null && handDown.mouseOnTopCard(x,y) &&
             (pileFrom == handDown)) {    // flip up the pileInMotion cards.
-
-            // if (solitaire.debug) log.debug("" + "mouseup on handdown" );
-            int totCards = 0;
-
-            for (i = 0; i < 10; i++) {
-                totCards += pileListUp[i].length();
-                totCards += pileListDown[i].length();
-
-                // repaint();
-                if (pileListUp[i].length() == 0) {
-                    all_filled = false;
-                }
-            }
-            if (all_filled || totCards < 10) {    // very extreme case that table is empty
-                for (i = 0; i < 10; i++) {     // spit out 10 cards to 10 piles
-                    if (Spider.debug) {
-                        log.debug("i is " + i);
-                    }
-                    if (Spider.debug) {
-                        log.debug("pile of 10 cards is: " + pileInMotion);
-
-                        // pileListUp[i].doPileToPile(pileInMotion.popTopCard(1)); // don't do any checking, Just Do It!!
-                    }
-                    pileListUp[i].doPileToPile(motionPiles[i].getPileInMotion().popTopCard(1));
-                    pileMover.movePile(motionPiles);
-                }
-                pileInMotion = null;
-                motionPile = null;
-                
-                pileFrom = null;
-            }
+            mouseUpHand();
         }
 
         // if (pileFrom == handDown ) { return true;}  //don't try to drag three cards to pile7!
@@ -539,61 +476,99 @@ public class Spider extends Applet implements Runnable {
             for (i = 0; i < 10; i++) {
                 if (i != origPileMoved && pileListUp[i].mouseOnTopCard(new Point(x - pIMxOffset,y)) &&
                     motionPile != null && pileFrom != handDown) {
-
-                    // move motionPile to a pile
-                    if (Spider.debughole) {
-                        log.debug("trying to dump pile on pile");
-                    }
-                    if ((pileListUp[i].length() != 0 && pileListUp[i].pileToPile(motionPile.getPileInMotion())) ||
-                        // pile moved to valid pile
-                        (pileListUp[i].length() == 0 && pileListDown[i].length() == 0 &&
-                         pileListUp[i].pileToPile(motionPile.getPileInMotion()))) {
-                        if (Spider.debughole) {
-                            log.debug("found a good pile to dump pile on! (" + i + ")");
-                        }
-                        pileInMotion = null;
-                        pileFrom = null;
-                        motionPile = null;  //todo keep list of motionPIle for undo
-                        pile p = pileListUp[i].checkCompleteSuit();
-
-                        if (Spider.debughole) {
-                            log.debug("p is " + p);
-                        }
-                        if (p != null) {        // We found a complete pile A-King
-                            acesList[current_ace++].pileToPile(p);
-                            if (current_ace == 8) {
-                                winner = true;
-                            }
-                            break;
-                        }
-                    }
-                    if (Spider.debughole) {
-                        log.debug("done checking for valid pile - hole");
-                    }
+                    if (handleMouseUpOnPile(i)) break;
                 } else {
                     if (flipPile == i && pileListDown[i].mouseOnTopCard(x,y) && pileListDown[i].length() != 0 &&
                         pileFrom != handDown) {
-
-                        // flip up a new card from hand
-                        flipPile = -1;
-                        if (debug) {
-                            log.debug("" + "clicked to flip");
-                        }
-                        Card cTmp = pileListDown[i].popTopCard();
-
-                        pileListUp[i].doCardToPile(cTmp,DOWNSEP);
+                        flipUpFaceDownCard(i);
                     }
                 }
             }
         }
         if (motionPile != null && motionPile.getPileFrom() != null){  //pile was dropped in an invalid location
             motionPile.getPileFrom().doPileToPile(motionPile.getPileInMotion());
-            motionPile = null;  //todo keep list of motionPile  for undo?
+            motionPile.getPileInMotion().setIsMoving(false);
+            motionPile = null;  
+
         }
         flipped = true;
         log.debug("down with mouseup");
         repaint();
         return true;
+    }
+
+    private void flipUpFaceDownCard(int i) {
+        flipPile = -1;
+        if (debug) {
+            log.debug("" + "clicked to flip");
+        }
+//        Card cTmp = pileListDown[i].popTopCard();
+//        pileListUp[i].doCardToPile(cTmp,DOWNSEP);
+
+        PileMoving moving = new PileMoving(pileListDown[i],1);
+        moving.setPileTo(pileListUp[i]);
+        pileMover.movePile(moving);
+    }
+
+    private boolean handleMouseUpOnPile(int i) {
+        // move motionPile to a pile
+        if (Spider.debughole) {
+            log.debug("trying to dump pile on pile");
+        }
+        motionPile.setPileTo(pileListUp[i]);
+//        if ((pileListUp[i].length() != 0 && pileListUp[i].pileToPile(motionPile.getPileInMotion())) ||
+//            pile moved to valid pile
+//            (pileListUp[i].length() == 0 && pileListDown[i].length() == 0 && pileListUp[i].pileToPile(motionPile.getPileInMotion()))) {
+        if ((pileListUp[i].length() != 0 && pileMover.movePile(motionPile) ||
+            // pile moved to valid pile
+            (pileListUp[i].length() == 0 && pileListDown[i].length() == 0 && pileMover.movePile(motionPile)))) {
+            motionPile.getPileInMotion().setIsMoving(false);
+
+            pileInMotion = null;
+            pileFrom = null;
+            motionPile = null;  //todo keep list of motionPIle for undo
+            pile p = pileListUp[i].checkCompleteSuit();
+
+            if (p != null) {        // We found a complete pile A-King
+                acesList[current_ace++].pileToPile(p);
+                if (current_ace == 8) {
+                    winner = true;
+                }
+                return true;
+            }
+        }
+        if (Spider.debughole) {
+            log.debug("done checking for valid pile - hole");
+        }
+        return false;
+    }
+
+    private void mouseUpHand() {
+        int i;
+        boolean all_filled = true;
+        // if (solitaire.debug) log.debug("" + "mouseup on handdown" );
+        int totCards = 0;
+
+        for (i = 0; i < 10; i++) {
+            totCards += pileListUp[i].length();
+            totCards += pileListDown[i].length();
+
+            // repaint();
+            if (pileListUp[i].length() == 0) {
+                all_filled = false;
+            }
+        }
+        if (all_filled ) {    // all piles must have at least one card before filling from hand
+            pileMover.movePile(motionPiles);
+        } else{
+            pileMover.cancelMovePile(motionPiles);
+            this.showStatus("All pile spaces must have at least one card.  Move any card to the empty space(s)");
+        }
+        pileInMotion = null;
+        motionPile = null;
+        motionPiles = null;
+        pileFrom = null;
+        return;
     }
 
     // removed for making a applet.
