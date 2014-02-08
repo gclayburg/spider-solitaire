@@ -38,32 +38,12 @@ public class CardDeck {
     public CardDeck(Applet ac,int numDecks) {
         deck = new Card[(52 * numDecks)];
         fill(ac,numDecks);
-        //    System.out.println("Deck after fill() is: " + this);
         shuffle();
-        //    System.out.println("Deck after shuffle() is: " + this);
     }
 
     public int len() {
         return deck.length;
     }
-
-//   public void fill(Applet ac,int numDecks){
-//     int i;
-//     int j;                                
-//     int h;
-//     Card c;
-//     for (j = 4; j >= 1; j--)
-//       for (i = 13; i >= 1; i--)
-// 	deck[13 * (j - 1) + i - 1] = new Card(ac,i, j);
-//     for (h = 1; h <=((numDecks -1 ) * 52);h++ )
-//       deck[52 + h - 1] = deck[h -1]; // use card image that we already have a reference to.
-//     cards = 52 * numDecks;
-//     for (int k = 0;(k < (numDecks *52)/2);k++){
-//       c = deck[k];
-//       deck[k] = deck[(numDecks *52)/2  -k];
-//       deck[(numDecks *52)/2 -k] = c;
-//     }
-//   }
 
     public void fill(Applet ac,int numDecks) {
         int i;
@@ -91,9 +71,8 @@ public class CardDeck {
     public String toString() {
         String s = "";
         for (int i = 0; i < cards; i++) {
-            s += deck[i];  //System.out.print("" + deck[i]);
+            s += deck[i];
         }
-        //    System.out.println("");
         return s;
     }
 

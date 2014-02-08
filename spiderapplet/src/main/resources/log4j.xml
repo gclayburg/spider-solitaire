@@ -35,10 +35,10 @@
         </filter>
     </appender>
 
-    <logger name="com.garyclayburg.spider.Card">
-        <level value="info"/>
-        <appender-ref ref="STDOUT"/>
-    </logger>
+    <!--<logger name="com.garyclayburg.spider.Card">-->
+        <!--<level value="info"/>-->
+        <!--<appender-ref ref="STDOUT"/>-->
+    <!--</logger>-->
     <root>
         <priority value="DEBUG"/>
         <appender-ref ref="STDOUT"/>

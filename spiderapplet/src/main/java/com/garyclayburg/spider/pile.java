@@ -1,5 +1,7 @@
-//import corejava.*;
 package com.garyclayburg.spider;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.image.ImageObserver;
@@ -8,13 +10,12 @@ public abstract class pile extends Component {
     protected boolean isMoving;
     protected Card[] cardPile;
     protected int maxCards = 0;  // can we use .length instead? no.
-    private boolean faceUp; // pile orientation
     protected int x; // x coord of top-left of pile
     protected int y; // y coord of top-left of pile
     protected int offSetY = 0;
     protected Point topLeft;
+    private static Logger log = LoggerFactory.getLogger(pile.class);
 
-    //public abstract class pile{
     public pile(int maxCards,Card[] ca,int x,int y) {
     /*  
         pre: 	ca is an array of maxCards Cards
@@ -30,13 +31,11 @@ public abstract class pile extends Component {
         this.isMoving = false;
     }
 
-    //  public abstract pile popTopCard(int num);
     public pile popTopCard(int num) {
         // pre: there are at least num cards to pop off
         // post: num cards are returned and popped off pile (or as many as we can pop off)
         Point pointOfTop;
-        //    pileint owner = pi;  // Interface for calling pile subclass - should be pile7up or pile10up
-        if (Spider.debug) System.out.println("pile: popTopCard(int)");
+        log.debug("pile: popTopCard(int)");
         if (maxCards == 0) {
             return null;
         }
@@ -50,10 +49,9 @@ public abstract class pile extends Component {
         pointOfTop =
                 topCardPoint();  //tricky part.  should use polymorphism here to drill down to correct extended pile.
         c[0] = popTopCard();
-        pile p = new pile10up(num,c,pointOfTop);  // can't use plain old pile. Can't instantiate abstract class.
         // could use callbacks via interfaces or make pile non-abstract and instantiate pile here.
         // or I could subclass this method to both pile7up and pile10up
-        return p;
+        return new pile10up(num,c,pointOfTop);
     }
 
     public Card popTopCard() {
@@ -61,9 +59,8 @@ public abstract class pile extends Component {
       pre: there exists at least one card in pile
       post: top card is taken off stack and returned.
       */
-        //    if (Spider.debug) System.out.println("trying to pop  " + maxCards + " card= " + cardPile[maxCards -1]);
-        if (Spider.debug) System.out.println("trying to pop  " + maxCards);
-        if (Spider.debug) System.out.println("popTopCard(): popping card: " + cardPile[maxCards - 1]);
+        log.debug("trying to pop  " + maxCards);
+        log.debug("popTopCard(): popping card: " + cardPile[maxCards - 1]);
         return cardPile[--maxCards];
     }
 
@@ -91,17 +88,15 @@ public abstract class pile extends Component {
     }
 
     public Card getTopCard() {
-        //    if (solitaire.debug) System.out.println("numpileup = " + maxCards);
         return (cardPile[maxCards - 1]);
     }
 
     public boolean mouseOnTopCard(int x,int y) {
     /* post: is point x,y on this top card?
      */
-        if (x >= topLeft.x && x <= (topLeft.x + Card.CARDWIDTH) &&
-            y >= (topLeft.y) &&
-            y <= (topLeft.y + Card.CARDHEIGHT)) return true;
-        return false;
+        return x >= topLeft.x && x <= (topLeft.x + Card.CARDWIDTH) &&
+               y >= (topLeft.y) &&
+               y <= (topLeft.y + Card.CARDHEIGHT);
     }
 
     public boolean mouseOnTopCard(Point p1) {
@@ -121,7 +116,7 @@ public abstract class pile extends Component {
     }
 
     public String toString() {  //debugging
-        int i = 0;
+        int i;
         String s = " ";
         for (i = 0; i < maxCards; i++) {
             s = s + cardPile[i];
@@ -152,8 +147,7 @@ public abstract class pile extends Component {
 
     public abstract int paintPile(Graphics g,ImageObserver eyes);
 
-    public abstract int paintPile(Graphics g,ImageObserver eyes,boolean blank); //todo too many paintPile()
-//    public abstract int paintPile(Graphics g, ImageObserver eyes, boolean blank, boolean bigGraphics);
+    public abstract int paintPile(Graphics g,ImageObserver eyes,boolean blank);
 
     public Point topCardPoint() {
         return topLeft;

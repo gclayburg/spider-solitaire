@@ -2,8 +2,6 @@
 
 package com.garyclayburg.spider;
 
-// import corejava.*;
-
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -20,8 +18,37 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 public class Spider extends Applet implements Runnable {
+    private Font ftr = new Font("TimesRoman",Font.PLAIN,18);
+    private int sleeptime;
+    private Button restart;
+    private Button cheat;
+    private Button undo;
+    private static CardDeck solDeck;
+    private static PileMoving motionPile;
+    private static PileMoving[] motionPiles;
+    private static int pIMxOffset;
+    private static pile pileFrom;
+    private static Point last_point = new Point(-1,-1);    // for moving a card.
+    private static pile10up[] pileListUp;       // L-R 0-6
+    private static pile10down[] pileListDown;       // L-R 0-6
+    private static int nPileMoved;
+    private static HandDown handDown;
+    private static ArrayList<AcePileSpider> acesList;
+    private static boolean special = false;    // easter egg.
+    private static boolean moveHandUpDown = false;
+    private Thread runner;
+    private Dimension d;
+    public Image offScrImage;
+    public PileMover pileMover;
+    public Graphics offScrGr;
+    private int flipPile;    // which pileup to flip a new card over from piledown
+    private boolean loaded = false;     // are Images loaded yet?
+    private boolean flipped = true;
+    private boolean cheating = false;
+
     public static final int CARDWIDTH = 71;
     public static final int CARDHEIGHT = 96;
     public static final int PILESEP = 5;
@@ -34,11 +61,10 @@ public class Spider extends Applet implements Runnable {
     public static final int XHANDOFFSET = 5;
     public static final int YHANDOFFSET = 10;
     public static final int HANDSEP = 5;
-    public static int iter = 0;
     public static int pileHeight;
     public static final boolean debug = true;
     public static final boolean debughole = true;
-    public static final boolean debugTiming = true;
+    public static final boolean debugTiming = false;
     public Applet ac;
     private static Logger log = LoggerFactory.getLogger(Spider.class);
 
@@ -71,7 +97,7 @@ public class Spider extends Applet implements Runnable {
         restart = new Button("Restart");
         restart.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                cheating=false;
+                cheating = false;
                 startmeup();
             }
         });
@@ -79,7 +105,7 @@ public class Spider extends Applet implements Runnable {
         cheat = new Button("Cheat");
         cheat.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                cheating=true;
+                cheating = true;
                 startmeup();
             }
         });
@@ -93,7 +119,6 @@ public class Spider extends Applet implements Runnable {
         });
         add(undo);
 
-        // add(spiderTable);
         ac = this;               // reference to applet context (needed for Card
         d = getSize();
         log.debug("size is: " + d);
@@ -113,7 +138,6 @@ public class Spider extends Applet implements Runnable {
             sleeptime = 250;
         }
 
-        // log.debug("sleep time is " + sleeptime);
         startmeup();
     }
 
@@ -135,10 +159,8 @@ public class Spider extends Applet implements Runnable {
                 URI combined = new URI(uri.toString() + "log4j.xml");
                 System.out.println("loading from codebase: " + combined);
                 InputStream fileStream = new FileInputStream(new File(combined));
-                if (fileStream != null) {
-                    new DOMConfigurator().doConfigure(fileStream,LogManager.getLoggerRepository());
+                new DOMConfigurator().doConfigure(fileStream,LogManager.getLoggerRepository());
 
-                }
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (URISyntaxException e) {
@@ -156,17 +178,16 @@ public class Spider extends Applet implements Runnable {
 
         // This will start a new game - either from the beginning or when
         // someone clicks, "restart"
-        int i = 0;
-        int j = 0;
+        int i;
+        int j;
 
-        winner = false;
         if (debug) {
             log.debug("startmeup()");
         }
         solDeck = new CardDeck(ac,2);    // Spider uses two decks of cards
-        if (cheating){
+        if (cheating) {
             solDeck.fill(ac,2);
-        }else{
+        } else {
             solDeck.shuffle();  // ok fine. so we shuffle the deck twice for the first game. I can live with that.
         }
         pileListUp = new pile10up[10];
@@ -199,17 +220,14 @@ public class Spider extends Applet implements Runnable {
             hCard[j] = solDeck.draw();
         }
         handDown = new HandDown(50,hCard,XHANDOFFSET,YHANDOFFSET);
-        acesList = new AcePileSpider[8];
+        acesList = new ArrayList<AcePileSpider>();
         Card[] caaa;
 
         for (i = 0; i < 8; i++) {
             caaa = new Card[13];
-            acesList[i] = new AcePileSpider(ac,0,caaa,(XACEOFFSET + CARDWIDTH * i + ACESEP * i),YACEOFFSET);
-
-            // if (solitaire.debug) printPile();
+            acesList.add(new AcePileSpider(ac,0,caaa,(XACEOFFSET + CARDWIDTH * i + ACESEP * i),YACEOFFSET));
         }
         pileMover = new PileMover();
-        current_ace = 0;
         if (Spider.debug) {
             log.debug("time to paint\n");
         }
@@ -244,7 +262,7 @@ public class Spider extends Applet implements Runnable {
             // repaint();
             try {
                 Thread.sleep(sleeptime);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ignored) {
             }
         }
     }
@@ -288,12 +306,12 @@ public class Spider extends Applet implements Runnable {
         }
         handDown.paintPile(offScrGr,this);
         for (i = 0; i < 8; i++) {
-            score += acesList[i].paintPile(offScrGr,this);
+            score += acesList.get(i).paintPile(offScrGr,this);
         }
         if (motionPile != null && motionPile.getPileInMotion() != null && pileFrom != handDown && !moveHandUpDown) {
             score += motionPile.getPileInMotion().paintPile(offScrGr,this);
         }
-        if (winner) {
+        if (findFirstEmptyAcePileIndex() == -1) { // winner
             offScrGr.setColor(Color.black);
             offScrGr.drawRect(200,200,100,100);
             offScrGr.setColor(Color.white);
@@ -309,9 +327,9 @@ public class Spider extends Applet implements Runnable {
         offScrGr.drawString("" + score,XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5 + 5,35);
         g.drawImage(offScrImage,0,0,this);
 
-        cheat  .setBounds(XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5,YHANDOFFSET + 30,50,20);
+        cheat.setBounds(XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5,YHANDOFFSET + 30,50,20);
         restart.setBounds(XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5,YHANDOFFSET + 50,50,20);
-        undo   .setBounds(XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5,YHANDOFFSET + 75,50,20);
+        undo.setBounds(XHANDOFFSET + Card.CARDWIDTH + HANDSEP * 5,YHANDOFFSET + 75,50,20);
         long endPaint = System.currentTimeMillis();
 
         if (debugTiming) {
@@ -339,13 +357,7 @@ public class Spider extends Applet implements Runnable {
     }
 
     public boolean mouseDown(Event evt,int x,int y) {
-
-        // currentMousePos = find(x,y);
-        int i = 0;
-
         nPileMoved = -1;
-        boolean ca;
-
         if (evt.modifiers == Event.META_MASK) {
             log.debug("right mouse button up");
             return true;    // This eliminates cheating via right mouse clicks
@@ -353,15 +365,12 @@ public class Spider extends Applet implements Runnable {
 
         if (handDown.mouseOnTopCard(x,y)) {    // need to flip 10 cards of hand to piles.
             handleHandClick();
-        } else{
+        } else {
             for (int pileNum = 0; pileNum < 10; pileNum++) {
                 handlePileClick(x,y,pileNum);
             }
         }
-        last_point.x = -1;    // kludge to get mouseDrag to be ok.
-        if (last_point.x == -1) {
-            last_point.setLocation(x,y);
-        }
+        last_point.setLocation(x,y); // kludge to get mouseDrag to be ok.
         return true;
     }
 
@@ -373,9 +382,7 @@ public class Spider extends Applet implements Runnable {
             }
             motionPiles[j] = new PileMoving(handDown,1,pileListUp[j]);
         }
-
         pileFrom = handDown;
-
         this.showStatus("");
     }
 
@@ -392,17 +399,8 @@ public class Spider extends Applet implements Runnable {
         }
     }
 
-    private void wait(int ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (InterruptedException e) {
-        }
-    }
-
     public boolean mouseDrag(Event evt,int x,int y) {    // called automatically
-        Color c;
-        Graphics g = null;
-        Graphics bigGraphicsBuffer = null;
+        Graphics g;
         long beginTime = System.currentTimeMillis();
         long getGraphicsTime;
 
@@ -423,8 +421,8 @@ public class Spider extends Applet implements Runnable {
                     }
                 }
                 for (int i = 0; i < 8; i++) {     // paint changed aces
-                    if (acesList[i].mouseOnTopCard(motionPile.getPileInMotion().getTopLeft())) {
-                        acesList[i].paintPile(offScrGr,this);
+                    if (acesList.get(i).mouseOnTopCard(motionPile.getPileInMotion().getTopLeft())) {
+                        acesList.get(i).paintPile(offScrGr,this);
                     }
                 }
                 if (handDown.mouseOnTopCard(motionPile.getPileInMotion().getTopLeft())) {
@@ -433,34 +431,22 @@ public class Spider extends Applet implements Runnable {
             }
             long endLoopTime = System.currentTimeMillis();
 
-            motionPile.getPileInMotion().setLocation((motionPile.getPileInMotion().getx() + x - last_point.x),
-
-                                                     // pileInMotion.move((pileInMotion.getx() + x - last_point.x),
-                                                     (motionPile.getPileInMotion().gety() + y - last_point.y));
+            motionPile.getPileInMotion().setLocation((motionPile.getPileInMotion().getx() + x - last_point.x),(
+                    motionPile.getPileInMotion().gety() + y - last_point.y));
             last_point.setLocation(x,y);
-
-            // last_point.move(x,y);
             if (pileFrom != handDown && !moveHandUpDown) {
                 motionPile.getPileInMotion().paintPile(offScrGr,this,false);
                 g.drawImage(offScrImage,0,0,this);
-
-                // g.drawImage(offScrImage,pileInMotion.getx(),0,this);
             }
             long endTime = System.currentTimeMillis();
 
             if (debugTiming) {
                 log.debug("MouseDrag: " + (endTime - beginTime));
-            }
-            if (debugTiming) {
                 log.debug("MouseDrag getGraphics: " + (getGraphicsTime - beginTime));
-            }
-            if (debugTiming) {
                 log.debug("MouseDrag endLoop: " + (endLoopTime - beginTime));
             }
             return true;
         } else {
-
-            // if (solitaire.debug) log.debug("bad drag");
             return true;
         }
     }
@@ -483,10 +469,7 @@ public class Spider extends Applet implements Runnable {
         if (motionPiles != null && handDown.mouseOnTopCard(x,y) &&
             (pileFrom == handDown)) {    // flip up the pileInMotion cards.
             mouseUpHand();
-        }
-
-        // if (pileFrom == handDown ) { return true;}  //don't try to drag three cards to pile7!
-        else {
+        } else {
             for (i = 0; i < 10; i++) {
                 if (i != origPileMoved && pileListUp[i].mouseOnTopCard(new Point(x - pIMxOffset,y)) &&
                     motionPile != null && pileFrom != handDown) {
@@ -499,7 +482,7 @@ public class Spider extends Applet implements Runnable {
                 }
             }
         }
-        if (motionPile != null && motionPile.getPileFrom() != null){  //pile was dropped in an invalid location
+        if (motionPile != null && motionPile.getPileFrom() != null) {  //pile was dropped in an invalid location
             motionPile.getPileFrom().doPileToPile(motionPile.getPileInMotion());
             motionPile.getPileInMotion().setIsMoving(false);
             motionPile = null;
@@ -516,9 +499,6 @@ public class Spider extends Applet implements Runnable {
         if (debug) {
             log.debug("" + "clicked to flip");
         }
-//        Card cTmp = pileListDown[i].popTopCard();
-//        pileListUp[i].doCardToPile(cTmp,DOWNSEP);
-
         PileMoving moving = new PileMoving(pileListDown[i],1);
         moving.setPileTo(pileListUp[i]);
         pileMover.movePile(moving);
@@ -530,26 +510,14 @@ public class Spider extends Applet implements Runnable {
             log.debug("trying to dump pile on pile");
         }
         motionPile.setPileTo(pileListUp[i]);
-//        if ((pileListUp[i].length() != 0 && pileListUp[i].pileToPile(motionPile.getPileInMotion())) ||
-//            pile moved to valid pile
-//            (pileListUp[i].length() == 0 && pileListDown[i].length() == 0 && pileListUp[i].pileToPile(motionPile.getPileInMotion()))) {
         if ((pileListUp[i].length() != 0 && pileMover.movePile(motionPile) ||
-            // pile moved to valid pile
-            (pileListUp[i].length() == 0 && pileListDown[i].length() == 0 && pileMover.movePile(motionPile)))) {
+             // pile moved to valid pile
+             (pileListUp[i].length() == 0 && pileListDown[i].length() == 0 && pileMover.movePile(motionPile)))) {
             motionPile.getPileInMotion().setIsMoving(false);
 
-            pileInMotion = null;
             pileFrom = null;
-            motionPile = null;  //todo keep list of motionPIle for undo
-            pile p = pileListUp[i].checkCompleteSuit();
-
-            if (p != null) {        // We found a complete pile A-King
-                acesList[current_ace++].pileToPile(p);
-                if (current_ace == 8) {
-                    winner = true;
-                }
-                return true;
-            }
+            motionPile = null;
+            if (checkForCompleteSuit(i)) return true;
         }
         if (Spider.debughole) {
             log.debug("done checking for valid pile - hole");
@@ -557,32 +525,51 @@ public class Spider extends Applet implements Runnable {
         return false;
     }
 
+    private boolean checkForCompleteSuit(int i) {
+        if (pileListUp[i].isCompleteSuit()) {
+            int firstEmptyAcePileIndex = findFirstEmptyAcePileIndex();
+            motionPile = new PileMoving(pileListUp[i],13,acesList.get(firstEmptyAcePileIndex));
+            pileMover.movePile(motionPile);
+            motionPile = null;
+            return true;
+        }
+        return false;
+    }
+
+    private int findFirstEmptyAcePileIndex() {
+        int firstEmptyAcePileIndex = -1;
+        for (int j = 0; j < acesList.size(); j++) {
+            AcePileSpider acePileSpider = acesList.get(j);
+            if (acePileSpider.length() == 0) {
+                firstEmptyAcePileIndex = j;
+                break;
+            }
+        }
+        return firstEmptyAcePileIndex;
+    }
+
     private void mouseUpHand() {
         int i;
         boolean all_filled = true;
-        // if (solitaire.debug) log.debug("" + "mouseup on handdown" );
         int totCards = 0;
 
         for (i = 0; i < 10; i++) {
             totCards += pileListUp[i].length();
             totCards += pileListDown[i].length();
 
-            // repaint();
             if (pileListUp[i].length() == 0) {
                 all_filled = false;
             }
         }
-        if (all_filled ) {    // all piles must have at least one card before filling from hand
+        if (all_filled || totCards < 10) {    // all piles must have at least one card before filling from hand
             pileMover.movePile(motionPiles);
-        } else{
+        } else {
             pileMover.cancelMovePile(motionPiles);
             this.showStatus("All pile spaces must have at least one card.  Move any card to the empty space(s)");
         }
-        pileInMotion = null;
         motionPile = null;
         motionPiles = null;
         pileFrom = null;
-        return;
     }
 
     // removed for making a applet.
@@ -593,9 +580,8 @@ public class Spider extends Applet implements Runnable {
     // f.setVisible(true);
     // }
     public String[][] getParameterInfo() {
-        String[][] info = {{"sleeptime","integer time in ms","time that the Graphics thread waits to redraw"}};
 
-        return info;
+        return new String[][]{{"sleeptime","integer time in ms","time that the Graphics thread waits to redraw"}};
     }
 
     public String getAppletInfo() {
@@ -609,7 +595,7 @@ public class Spider extends Applet implements Runnable {
      * post: 	pile, hand printed to stdout
      * returns: 	none
      */
-        int i = 0;
+//        int i = 0;
 
         // if (debug) log.debug("Here is the PileUp List:");
         // for (i =0; i< 7; i++){
@@ -624,42 +610,6 @@ public class Spider extends Applet implements Runnable {
         // if (solitaire.debughand) log.debug("" + handUp );
     }
 
-    private Canvas spiderTable;
-    private Font ftr = new Font("TimesRoman",Font.PLAIN,18);
-    private int sleeptime;
-    private Button restart;
-    private Button cheat;
-    private Button undo;
-    private static CardDeck solDeck;
-    private static pile pileInMotion;
-    private static PileMoving motionPile;
-    private static PileMoving[] motionPiles;
-    private static int pIMxOffset;
-    private static pile pileFrom;
-    private static Point pointCardInMotion = new Point(-1,-1);
-    private static Point last_point = new Point(-1,-1);    // for moving a card.
-    private static pile10up[] pileListUp;       // L-R 0-6
-    private static pile10down[] pileListDown;       // L-R 0-6
-    private static int nPileMoved;
-    private static HandDown handDown;
-
-    // private static HandUp handUp;
-    private static pile pileHand;
-    private static AcePileSpider[] acesList;
-    private static boolean special = false;    // easter egg.
-    private static boolean moveHandUpDown = false;
-    private Thread runner;
-    private Dimension d;
-    private boolean winner = false;
-    public Image offScrImage;
-    public PileMover pileMover;
-    public Graphics offScrGr;
-    public Graphics g2;
-    private int flipPile;    // which pileup to flip a new card over from piledown
-    private boolean loaded = false;     // are Images loaded yet?
-    private boolean flipped = true;
-    private int current_ace;
-    private boolean cheating = false;
 }
 
 /*--- formatting done in "Gary Java Convention" style on 11-28-2001 ---*/

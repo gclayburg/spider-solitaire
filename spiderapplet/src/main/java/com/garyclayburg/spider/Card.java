@@ -34,7 +34,7 @@ import java.awt.image.ImageObserver;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Hashtable;
+import java.util.HashMap;
 
 public final class Card {
     public static final int CARDWIDTH = 71;
@@ -56,11 +56,8 @@ public final class Card {
     private Applet ac;
     private int value;
     private int suit;
-    private static Hashtable hCardImages = new Hashtable();
+    private static HashMap<String, Image> hCardImages = new HashMap<String, Image>();
     private Image gifImg;
-    private static URL cb;
-    public Image tmpImage;
-    public Graphics tmpGr;
     private static Logger log = LoggerFactory.getLogger(Card.class);
 
     public Card(int s,int v) {
@@ -71,19 +68,9 @@ public final class Card {
         suit = s;
     }
 
-    /**
-     * needed for applet running via intelliJ to find resources
-     *
-     * @param imageName
-     *
-     * @return
-     */
     private Image loadImageFromFile(String imageName) {
-        System.out.println("loading Image from codebase: " + ac.getCodeBase() + imageName);
-        Image image = ac.getImage(ac.getCodeBase(),imageName);
-        System.out.println("image from file: " + image);
-
-        return image;
+        log.debug("loading Image from codebase: " + ac.getCodeBase() + imageName);
+        return ac.getImage(ac.getCodeBase(),imageName);
     }
 
     private Image loadImageFromResource(String imageName) {
@@ -102,12 +89,13 @@ public final class Card {
         //needed for Netscape 4.x (also works with IE)
         // This loading method creates partially loaded images with jdk 1.3 (appletviewer, netscape 6)
 
+        //do we still need this method for loading images?
         log.debug("attempting to load from stream: " + imageName);
         InputStream in = getClass().getResourceAsStream(imageName);
         if (in != null) {
             int avail = in.available();
             byte buffer[] = new byte[in.available()];
-            in.read(buffer);
+            in.read(buffer);  //todo fix this to either verify image is completely read, or load some other way
             image = Toolkit.getDefaultToolkit().createImage(buffer);
         }
         return image;
@@ -115,9 +103,9 @@ public final class Card {
 
     private Image loadImage(String imageName) {
         log.debug("loading image: " + imageName);
-        Image cardImage = null;
+        Image cardImage;
         if (hCardImages.containsKey(imageName)) {
-            cardImage = (Image) hCardImages.get(imageName);
+            cardImage = hCardImages.get(imageName);
         } else {
             // Be careful.  Order of trying different loading methods makes a difference!
             try {
@@ -128,7 +116,7 @@ public final class Card {
                         log.debug("load this from resource stream");
                         cardImage = loadImageFromResourceStream(imageName);
                     } catch (IOException e) {
-                        log.debug("can't even load resource stream");
+                        log.error("can't even load resource stream");
                     }
                     if (cardImage == null) {
                         log.debug("try from file");
@@ -163,13 +151,10 @@ public final class Card {
     public Card(Applet ac,int v,int s) {
         value = v;
         suit = s;
-        URL u = null;
         this.ac = ac;
-        //    log.debug("calling card ac,v,s = " + v + ", " + s);
         if (!gotEmpty) {
             tracker = new MediaTracker(ac);
             emptyStaticImg = loadImage("/CardImages/empty.gif");
-//      emptyStaticImg = loadImage("/empty.gif");
             tracker.addImage(emptyStaticImg,1);
             backImg = loadImage("/CardImages/back.gif");
             tracker.addImage(backImg,2);
@@ -186,7 +171,6 @@ public final class Card {
         this.ac = ac;
         value = 1;
         suit = 1;
-        //    log.debug("plain card constructor");
         gifImg = emptyStaticImg;
     }
 
@@ -200,7 +184,7 @@ public final class Card {
     }
 
     public boolean equals(Card c) {
-        boolean out = false;
+        boolean out;
         out = this.getValue() == c.getValue() && this.getSuit() == c.getSuit();
         if (Spider.debug) log.debug("Card.equals(): " + out);
         return out;
@@ -216,14 +200,12 @@ public final class Card {
         } catch (InterruptedException e) {
             log.debug("why did tracker get interrupted on 1?");
         }
-        ;
 
         try {
             tracker.waitForID(2);
         } catch (InterruptedException e) {
             log.debug("why did tracker get interrupted on 2?");
         }
-        ;
 
         for (int val = 1; val <= 13; val++) {
             for (int suit = 1; suit <= 4; suit++) {
@@ -237,7 +219,6 @@ public final class Card {
                 } catch (InterruptedException e) {
                     log.debug("tracker got exception " + e);
                 }
-                ;
                 if (tracker.isErrorID(cardnum)) {
                     ac.showStatus("Error loading image " + str + "; Come back another day.");
                     return false;
@@ -256,12 +237,10 @@ public final class Card {
     }
 
     public boolean isRed() {
-        //   if (solitaire.debug) log.debug("" + "checking redness of card " + this);
         return (suit == DIAMONDS || suit == HEARTS);
     }
 
     public boolean isBlack() {
-        //    if (solitaire.debug) log.debug("" + "checking blackness of card " + this );
         return (suit == SPADES || suit == CLUBS);
     }
 
@@ -284,14 +263,9 @@ public final class Card {
     }
 
     public void drawCard(Graphics g,int x,int y,ImageObserver eyes,boolean front) {
-        //    System.out.print("Drawing Card: " + this );
-        //    if (this == null)
-        //  log.debug("Card: null?  Whatdoyou mean null?");
         if (front) {
             g.drawImage(gifImg,x,y,eyes);
-            log.debug("Card.drawCard(): here comes " + this);
         } else {
-            log.debug("CARD.DRAWCARD(): here comes a back");
             g.drawImage(backImg,x,y,eyes);
         }
     }
