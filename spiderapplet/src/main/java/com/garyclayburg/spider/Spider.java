@@ -40,7 +40,7 @@ public class Spider extends Applet implements Runnable {
     private static boolean special = false;    // easter egg.
     private static boolean moveHandUpDown = false;
     private Thread runner;
-    private Dimension d;
+    private Dimension appletDimension;
     public Image offScrImage;
     public PileMover pileMover;
     public Graphics offScrGr;
@@ -120,13 +120,8 @@ public class Spider extends Applet implements Runnable {
         add(undo);
 
         ac = this;               // reference to applet context (needed for Card
-        d = getSize();
-        log.debug("size is: " + d);
-        offScrImage = createImage(d.width,d.height);    // double buffer paint()
-        offScrGr = offScrImage.getGraphics();
-        offScrGr.setColor(Color.green);
-        offScrGr.fillRect(0,0,d.width,d.height);
-        pileHeight = d.height - YOFFSET;
+        setupBackground();
+        /*
         String sleeps = getParameter("sleeptime");
 
         try {
@@ -137,8 +132,26 @@ public class Spider extends Applet implements Runnable {
         if (sleeptime == 0) {
             sleeptime = 250;
         }
-
+*/
+        sleeptime=250;
         startmeup();
+    }
+
+    private void setupBackground() {
+        appletDimension = getSize();
+        log.debug("size is: " + appletDimension);
+        log.debug("graphics env "+ GraphicsEnvironment.isHeadless());
+        log.debug("isDisplayable "+isDisplayable());
+        log.debug("isDoubleBuffered "+isDoubleBuffered());
+        offScrImage = createImage(appletDimension.width,appletDimension.height);    // double buffer paint()
+        offScrGr = offScrImage.getGraphics();
+        offScrGr.setColor(Color.green);
+        offScrGr.fillRect(0,0,appletDimension.width,appletDimension.height);
+        pileHeight = appletDimension.height - YOFFSET;
+    }
+
+    public void manualResize() {
+        setupBackground();
     }
 
     private void configureLog4j() {
@@ -298,7 +311,7 @@ public class Spider extends Applet implements Runnable {
             log.debug("painting...");
         }
         offScrGr.setColor(Color.green);
-        offScrGr.fillRect(0,0,d.width,d.height);
+        offScrGr.fillRect(0,0,appletDimension.width,appletDimension.height);
         for (i = 0; i < 10; i++) {
             int numCardsDown = pileListDown[i].paintPile(offScrGr,this);
             pileListUp[i].setNumCardsDown(numCardsDown);
@@ -609,7 +622,6 @@ public class Spider extends Applet implements Runnable {
         // if (solitaire.debughand) log.debug("try..." + handDown.toString() + "why? ");
         // if (solitaire.debughand) log.debug("" + handUp );
     }
-
 }
 
 /*--- formatting done in "Gary Java Convention" style on 11-28-2001 ---*/
