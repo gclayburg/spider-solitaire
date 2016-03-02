@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp
+        spec="$jnlpspec"
+        codebase="http://diskstation.garyclayburg.com/spidermaven"
+        href="$outputFile">
+    <information>
+        <title>$project.Name</title>
+        <vendor>$project.Organization.Name</vendor>
+        <homepage> href="$project.Url"</homepage>
+        <description>$project.Description</description>
+        <offline-allowed/>
+    </information>
+    <resources>
+        <j2se version="$j2seVersion"/>
+        $dependencies
+    </resources>
+    <application-desc main-class="$mainClass"/>
+    <update check="background"/>
+</jnlp>
