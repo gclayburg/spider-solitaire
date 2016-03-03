@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jnlp
         spec="1.0+"
-        codebase="http://diskstation.garyclayburg.com/spidermaven"
+        codebase="https://raw.githubusercontent.com/gclayburg/spider-solitaire/master"
         href="spider.jnlp">
     <information>
         <title>Clayburg Spider Solitaire</title>
