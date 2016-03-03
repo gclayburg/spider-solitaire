@@ -15,5 +15,5 @@
         $dependencies
     </resources>
     <application-desc main-class="$mainClass"/>
-    <update check="background"/>
+    <update check="always"/>
 </jnlp>

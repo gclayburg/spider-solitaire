@@ -220,11 +220,13 @@ public final class Card {
                     log.debug("tracker got exception " + e);
                 }
                 if (tracker.isErrorID(cardnum)) {
+                    log.debug("Error loading image " + str + "  " + i);
                     ac.showStatus("Error loading image " + str + "; Come back another day.");
                     return false;
                 }
             }
         }
+        log.debug("cards should be loaded");
         return true;
     }
 

@@ -78,11 +78,11 @@ public class Spider extends Applet implements Runnable {
     }    // end of main ()
 
     public Spider() {
-        System.out.println("Spider()");
+        System.out.println("Constructing Spider()");
     }
 
     public void init() {
-        System.out.println("ok");
+        System.out.println("Spider.init");
         configureLog4j();
         log.info("Spider() starting up...");
 
@@ -266,18 +266,40 @@ public class Spider extends Applet implements Runnable {
             return;
         }
         this.showStatus("Loaded all cards...");
+        log.debug("cards loading.  painting...");
+
         repaint();
+
+        //call repaint() again after some delay to make sure event thread will actually paint the screen.  if repaint() is called only once here, Spider.paint()
+        // may not be called when the app starts up.
+        // There is some ugly race condition somewhere - probably something related to the ancient AWT event model.  This delay before calling
+        // repaint() again seems to get around the problem so the app can start up and display the initial screen consistently.
+        try {
+            Thread.sleep(sleeptime);
+        } catch (InterruptedException ignored) {
+        }
+        log.debug("painting again");
+        repaint();
+        try {
+            Thread.sleep(sleeptime);
+        } catch (InterruptedException ignored) {
+        }
+        log.debug("painting again");
+        repaint();
+
 
         // MediaTracker should have loaded all cards now...
         loaded = true;
         while (runner != null) {
 
-            // repaint();
+//            log.info("repaint after sleep");
+//            repaint();
             try {
                 Thread.sleep(sleeptime);
             } catch (InterruptedException ignored) {
             }
         }
+        log.debug("Spider thread finishing...");
     }
 
     public boolean handleEvent(Event evt) {

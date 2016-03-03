@@ -27,7 +27,8 @@ import java.util.Iterator;
 public class MainSpider extends Frame implements AppletStub, AppletContext{
     private static Logger log = LoggerFactory.getLogger(MainSpider.class);
 
-    MainSpider(final Spider applet){
+    MainSpider(final Spider applet) {
+        log.info("Constructing MainSpider");
         setTitle("Spider main");
         setSize(800,600);
         add("Center",applet);
@@ -58,6 +59,7 @@ public class MainSpider extends Frame implements AppletStub, AppletContext{
     }
 
     public static void main(String[] args) {
+        log.info("MainSpider starting");
         Spider applet = new Spider();
         new MainSpider(applet);
     }
