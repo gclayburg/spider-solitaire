@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jnlp
         spec="$jnlpspec"
-        codebase="https://raw.githubusercontent.com/gclayburg/spider-solitaire/master"
+        codebase="$jnlpcodebase"
         href="$outputFile">
     <information>
         <title>$project.Name</title>

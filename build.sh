@@ -1,5 +1,5 @@
 #!/bin/bash
-mvn clean install && cp -rp spiderapplet/target/jnlp/* . && cp -rp spiderapplet/src/main/resources/spider.html lib/
+./dobuild.sh -Djnlpcodebase=https://raw.githubusercontent.com/gclayburg/spider-solitaire/master
 
 # run app via webstart:
 # javaws spider.jnlp
