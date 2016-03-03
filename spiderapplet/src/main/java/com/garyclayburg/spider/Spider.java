@@ -281,7 +281,7 @@ public class Spider extends Applet implements Runnable {
         log.debug("painting again");
         repaint();
         try {
-            Thread.sleep(sleeptime);
+            Thread.sleep(sleeptime *4);
         } catch (InterruptedException ignored) {
         }
         log.debug("painting again");
