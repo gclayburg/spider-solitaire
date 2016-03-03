@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp
+        spec="1.0+"
+        codebase="http://diskstation.garyclayburg.com/spidermaven"
+        href="spider.jnlp">
+    <information>
+        <title>Clayburg Spider Solitaire</title>
+        <vendor>Gary Clayburg</vendor>
+        <homepage> href="https://github.com/gclayburg"</homepage>
+        <description>A simple Java based spider solitaire game</description>
+        <offline-allowed/>
+    </information>
+    <resources>
+        <j2se version="1.5+"/>
+            
+    <jar href="lib/spiderapplet-1.0-SNAPSHOT.jar" main="true"/>
+    <jar href="lib/slf4j-api-1.6.6.jar"/>
+    <jar href="lib/log4j-1.2.16.jar"/>
+    <jar href="lib/slf4j-log4j12-1.6.6.jar"/>
+
+    </resources>
+    <application-desc main-class="com.garyclayburg.spider.MainSpider"/>
+    <update check="background"/>
+</jnlp>
