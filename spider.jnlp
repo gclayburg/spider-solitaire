@@ -20,5 +20,5 @@
 
     </resources>
     <application-desc main-class="com.garyclayburg.spider.MainSpider"/>
-    <update check="background"/>
+    <update check="always"/>
 </jnlp>
