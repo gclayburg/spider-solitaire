@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Spider
+Comment=Clayburg Spider Solitaire
+Exec=/home/gclaybur/dev/spider-solitaire/runspider.sh
+Icon=/home/gclaybur/dev/spider-solitaire/backicon.png
+Terminal=true
+Type=Application
+Categories=Game;
+StartupWMClass=com-garyclayburg-spider-MainSpider
+StartupNotify=true
