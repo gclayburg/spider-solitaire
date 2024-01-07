@@ -25,7 +25,7 @@ import java.util.Iterator;
  * Time: 9:29 AM
  */
 public class MainSpider extends Frame implements AppletStub, AppletContext{
-    private static Logger log = LoggerFactory.getLogger(MainSpider.class);
+    private static final Logger log = LoggerFactory.getLogger(MainSpider.class);
 
     MainSpider(final Spider applet) {
         log.info("Constructing MainSpider");
@@ -37,6 +37,7 @@ public class MainSpider extends Frame implements AppletStub, AppletContext{
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
+                log.info("manual resize now");
                 applet.manualResize();
 
             }

@@ -10,3 +10,10 @@
 #Ignore generated log files, e.g. soapui.log, decryption-log.out
 *.log
 *.out
+
+######################
+# Maven
+######################
+/log/
+target/
+

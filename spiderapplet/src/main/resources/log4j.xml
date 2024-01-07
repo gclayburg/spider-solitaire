@@ -40,7 +40,7 @@
         <!--<appender-ref ref="STDOUT"/>-->
     <!--</logger>-->
     <root>
-        <priority value="DEBUG"/>
+        <priority value="ERROR"/>
         <appender-ref ref="STDOUT"/>
     </root>
 
